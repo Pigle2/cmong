@@ -10,7 +10,7 @@ import { ChatMessageThread } from '@/components/features/chat/chat-message-threa
 export default function ChatPageClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user } = useUser()
+  const { user, loading: userLoading } = useUser()
   const supabase = createClient()
 
   const [rooms, setRooms] = useState<any[]>([])
@@ -99,6 +99,14 @@ export default function ChatPageClient() {
 
     loadRooms()
   }, [user])
+
+  if (userLoading) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
+        <p className="text-muted-foreground">로딩 중...</p>
+      </div>
+    )
+  }
 
   if (!user) {
     return (
