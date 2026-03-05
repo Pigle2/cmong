@@ -115,15 +115,8 @@ export default function ChatPageClient({ sellerId, serviceId }: ChatPageClientPr
     run()
   }, [user])
 
-  if (userLoading) {
-    return (
-      <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <p className="text-muted-foreground">채팅 로딩 중...</p>
-      </div>
-    )
-  }
-
-  if (!user) {
+  // userLoading 끝났는데 user가 없으면 로그인 필요
+  if (!userLoading && !user) {
     return (
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
         <p className="text-muted-foreground">로그인이 필요합니다</p>
@@ -131,13 +124,16 @@ export default function ChatPageClient({ sellerId, serviceId }: ChatPageClientPr
     )
   }
 
+  // user가 아직 없으면 (userLoading 중) 채팅 UI 스켈레톤으로 표시
+  const isLoading = loading || !user
+
   return (
     <div className="mx-auto flex h-[calc(100vh-4rem)] max-w-6xl">
       <div className={`w-full border-r md:w-80 ${selectedRoom ? 'hidden md:block' : ''}`}>
-        <ChatRoomList rooms={rooms} selectedRoom={selectedRoom} onSelectRoom={setSelectedRoom} loading={loading} />
+        <ChatRoomList rooms={rooms} selectedRoom={selectedRoom} onSelectRoom={setSelectedRoom} loading={isLoading} />
       </div>
       <div className={`flex-1 ${!selectedRoom ? 'hidden md:flex' : 'flex'}`}>
-        {selectedRoom ? (
+        {selectedRoom && user ? (
           <ChatMessageThread roomId={selectedRoom} currentUserId={user.id} onBack={() => setSelectedRoom(null)} />
         ) : (
           <div className="flex flex-1 items-center justify-center text-muted-foreground">대화를 선택해주세요</div>
