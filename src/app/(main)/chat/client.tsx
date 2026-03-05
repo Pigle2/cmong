@@ -1,14 +1,17 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { ChatRoomList } from '@/components/features/chat/chat-room-list'
 import { ChatMessageThread } from '@/components/features/chat/chat-message-thread'
 
-export default function ChatPageClient() {
-  const searchParams = useSearchParams()
+interface ChatPageClientProps {
+  sellerId?: string
+  serviceId?: string
+}
+
+export default function ChatPageClient({ sellerId, serviceId }: ChatPageClientProps) {
   const { user, loading: userLoading } = useUser()
 
   const [rooms, setRooms] = useState<any[]>([])
@@ -21,8 +24,6 @@ export default function ChatPageClient() {
     initialized.current = true
 
     const supabase = createClient()
-    const sellerId = searchParams.get('seller')
-    const serviceId = searchParams.get('service')
 
     const run = async () => {
       try {
@@ -78,7 +79,6 @@ export default function ChatPageClient() {
 
         if (!participantRooms || participantRooms.length === 0) {
           setRooms([])
-          setLoading(false)
           return
         }
 
@@ -119,7 +119,7 @@ export default function ChatPageClient() {
   if (userLoading) {
     return (
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <p className="text-muted-foreground">로딩 중...</p>
+        <p className="text-muted-foreground">채팅 로딩 중...</p>
       </div>
     )
   }
