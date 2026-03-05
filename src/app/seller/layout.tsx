@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Header } from '@/components/layout/header'
 import { Toaster } from '@/components/ui/toaster'
+import { UserProvider } from '@/hooks/use-user'
 import { cn } from '@/lib/utils'
 import { LayoutDashboard, Package, ShoppingCart, User, MessageSquare } from 'lucide-react'
 
@@ -23,6 +24,7 @@ export default function SellerLayout({
   const pathname = usePathname()
 
   return (
+    <UserProvider>
     <div className="flex min-h-screen flex-col">
       <Header />
       <div className="flex flex-1">
@@ -55,5 +57,6 @@ export default function SellerLayout({
       </div>
       <Toaster />
     </div>
+    </UserProvider>
   )
 }

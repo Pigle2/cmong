@@ -9,9 +9,10 @@ import { Send } from 'lucide-react'
 interface ChatInputProps {
   roomId: string
   currentUserId: string
+  onMessageSent?: () => void
 }
 
-export function ChatInput({ roomId, currentUserId }: ChatInputProps) {
+export function ChatInput({ roomId, currentUserId, onMessageSent }: ChatInputProps) {
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const supabase = createClient()
@@ -36,6 +37,7 @@ export function ChatInput({ roomId, currentUserId }: ChatInputProps) {
 
     setMessage('')
     setSending(false)
+    onMessageSent?.()
   }
 
   return (

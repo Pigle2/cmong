@@ -19,7 +19,7 @@ export function ChatMessageThread({
   currentUserId,
   onBack,
 }: ChatMessageThreadProps) {
-  const { messages, loading } = useRealtimeMessages(roomId)
+  const { messages, loading, refetch } = useRealtimeMessages(roomId)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export function ChatMessageThread({
         )}
       </ScrollArea>
 
-      <ChatInput roomId={roomId} currentUserId={currentUserId} />
+      <ChatInput roomId={roomId} currentUserId={currentUserId} onMessageSent={refetch} />
     </div>
   )
 }

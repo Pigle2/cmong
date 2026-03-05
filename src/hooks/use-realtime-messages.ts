@@ -52,5 +52,5 @@ export function useRealtimeMessages(roomId: string) {
     }
   }, [roomId, fetchMessages])
 
-  return { messages, loading }
+  return { messages, loading, refetch: fetchMessages }
 }
