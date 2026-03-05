@@ -17,6 +17,13 @@ export async function POST(
 
   const { reply } = await request.json()
 
+  if (!reply || typeof reply !== 'string' || reply.trim().length === 0 || reply.length > 2000) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '답글은 1~2000자여야 합니다' } },
+      { status: 400 }
+    )
+  }
+
   // Verify user is the seller
   const { data: review } = await supabase
     .from('reviews')

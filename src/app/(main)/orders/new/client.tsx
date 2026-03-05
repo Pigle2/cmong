@@ -47,7 +47,8 @@ export default function NewOrderClient() {
   const handleOrder = async () => {
     if (!service || !pkg) return
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
     if (!user) { router.push('/login'); return }
 
     if (user.id === service.seller_id) {

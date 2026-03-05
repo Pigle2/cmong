@@ -20,7 +20,8 @@ export default function SellerProfilePage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
       if (!user) return
       const { data } = await supabase
         .from('seller_profiles')
@@ -39,7 +40,8 @@ export default function SellerProfilePage() {
   }, [])
 
   const handleSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
     if (!user) return
 
     setLoading(true)

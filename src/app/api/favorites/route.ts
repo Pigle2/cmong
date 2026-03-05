@@ -32,6 +32,10 @@ export async function POST(request: NextRequest) {
 
   const { serviceId } = await request.json()
 
+  if (!serviceId || typeof serviceId !== 'string') {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: 'serviceId가 필요합니다' } }, { status: 400 })
+  }
+
   const { data: existing } = await supabase
     .from('favorites')
     .select('id')

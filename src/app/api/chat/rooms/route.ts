@@ -11,6 +11,25 @@ export async function POST(request: NextRequest) {
 
   const { sellerId, serviceId, roomType = 'INQUIRY' } = await request.json()
 
+  // 입력값 검증
+  if (!sellerId || typeof sellerId !== 'string') {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: 'sellerId가 필요합니다' } }, { status: 400 })
+  }
+
+  if (!['INQUIRY', 'ORDER'].includes(roomType)) {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '잘못된 roomType입니다' } }, { status: 400 })
+  }
+
+  if (sellerId === user.id) {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '자기 자신과 채팅방을 만들 수 없습니다' } }, { status: 400 })
+  }
+
+  // sellerId 존재 확인
+  const { data: seller } = await supabase.from('profiles').select('id').eq('id', sellerId).single()
+  if (!seller) {
+    return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: '존재하지 않는 사용자입니다' } }, { status: 404 })
+  }
+
   // Check if room already exists
   const { data: existing } = await supabase
     .from('chat_rooms')

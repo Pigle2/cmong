@@ -5,11 +5,11 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient()
   const { searchParams } = new URL(request.url)
 
-  const q = searchParams.get('q') || ''
+  const q = (searchParams.get('q') || '').slice(0, 100)
   const category = searchParams.get('category') || ''
   const sort = searchParams.get('sort') || 'recommended'
-  const page = parseInt(searchParams.get('page') || '1')
-  const limit = parseInt(searchParams.get('limit') || '20')
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1)
+  const limit = Math.min(Math.max(1, parseInt(searchParams.get('limit') || '20') || 20), 100)
 
   let query = supabase
     .from('services')

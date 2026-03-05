@@ -21,7 +21,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
       if (!user) return
       const { data: profile } = await supabase
         .from('profiles')
@@ -36,7 +37,8 @@ export default function SettingsPage() {
   }, [])
 
   const handleSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    const user = session?.user
     if (!user) return
 
     setLoading(true)

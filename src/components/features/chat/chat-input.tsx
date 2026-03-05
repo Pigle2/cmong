@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Send } from 'lucide-react'
@@ -12,32 +11,28 @@ interface ChatInputProps {
   onMessageSent?: () => void
 }
 
-export function ChatInput({ roomId, currentUserId, onMessageSent }: ChatInputProps) {
+export function ChatInput({ roomId, onMessageSent }: ChatInputProps) {
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
-  const supabase = createClient()
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!message.trim() || sending) return
 
     setSending(true)
-    await supabase.from('chat_messages').insert({
-      room_id: roomId,
-      sender_id: currentUserId,
-      message_type: 'TEXT',
-      content: message.trim(),
-    })
-
-    // Update room timestamp
-    await supabase
-      .from('chat_rooms')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', roomId)
-
-    setMessage('')
-    setSending(false)
-    onMessageSent?.()
+    try {
+      await fetch(`/api/chat/rooms/${roomId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: message.trim() }),
+      })
+      setMessage('')
+      onMessageSent?.()
+    } catch (e) {
+      console.error('send message error:', e)
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
