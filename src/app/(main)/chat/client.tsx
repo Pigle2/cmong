@@ -55,18 +55,17 @@ export default function ChatPageClient({ sellerId, serviceId }: ChatPageClientPr
           }
 
           if (!found) {
-            const { data: newRoom, error: roomErr } = await supabase
+            const roomId = crypto.randomUUID()
+            const { error: roomErr } = await supabase
               .from('chat_rooms')
-              .insert({ room_type: 'INQUIRY', service_id: serviceId })
-              .select()
-              .single()
+              .insert({ id: roomId, room_type: 'INQUIRY', service_id: serviceId })
 
-            if (newRoom && !roomErr) {
+            if (!roomErr) {
               await supabase.from('chat_participants').insert([
-                { room_id: newRoom.id, user_id: user.id },
-                { room_id: newRoom.id, user_id: sellerId },
+                { room_id: roomId, user_id: user.id },
+                { room_id: roomId, user_id: sellerId },
               ])
-              setSelectedRoom(newRoom.id)
+              setSelectedRoom(roomId)
             }
           }
         }
