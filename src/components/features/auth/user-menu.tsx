@@ -35,10 +35,10 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
-        <Avatar className="h-8 w-8 border">
+        <Avatar className="h-9 w-9 border-2 border-primary/30 hover:border-primary transition-colors">
           <AvatarImage src={profile?.avatar_url || undefined} />
-          <AvatarFallback className="text-xs bg-primary/10">
-            <User className="h-4 w-4" />
+          <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+            {nickname.slice(0, 2)}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
