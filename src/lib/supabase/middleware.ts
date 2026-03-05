@@ -42,7 +42,8 @@ export async function updateSession(request: NextRequest) {
   if (isProtectedPath && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    url.searchParams.set('redirect', request.nextUrl.pathname)
+    // URL에 민감한 정보 노출하지 않음
+    url.search = ''
     return NextResponse.redirect(url)
   }
 
@@ -57,6 +58,11 @@ export async function updateSession(request: NextRequest) {
     url.pathname = '/'
     return NextResponse.redirect(url)
   }
+
+  // 보안 헤더 설정
+  supabaseResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  supabaseResponse.headers.set('X-Content-Type-Options', 'nosniff')
+  supabaseResponse.headers.set('X-Frame-Options', 'DENY')
 
   return supabaseResponse
 }

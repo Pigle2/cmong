@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ChatRoomList } from '@/components/features/chat/chat-room-list'
 import { ChatMessageThread } from '@/components/features/chat/chat-message-thread'
@@ -13,10 +14,18 @@ interface ChatPageClientProps {
 }
 
 export default function ChatPageClient({ sellerId, serviceId, initialRooms, currentUserId }: ChatPageClientProps) {
+  const router = useRouter()
   const [rooms, setRooms] = useState<any[]>(initialRooms)
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const initialized = useRef(false)
+
+  // URL에서 쿼리 파라미터 정리 (seller/service ID 노출 방지)
+  useEffect(() => {
+    if (sellerId || serviceId) {
+      window.history.replaceState(null, '', '/chat')
+    }
+  }, [sellerId, serviceId])
 
   // 문의하기에서 왔으면 방 찾기/생성
   useEffect(() => {

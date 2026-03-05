@@ -21,9 +21,14 @@ export function ChatMessageThread({
 }: ChatMessageThreadProps) {
   const { messages, loading, refetch } = useRealtimeMessages(roomId)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const prevCountRef = useRef(0)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // 새 메시지가 추가됐을 때만 스크롤 (폴링으로 같은 데이터 받으면 무시)
+    if (messages.length > prevCountRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+    prevCountRef.current = messages.length
   }, [messages])
 
   return (
