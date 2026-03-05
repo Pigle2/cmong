@@ -17,7 +17,7 @@ import { User, Package, Heart, MessageSquare, Settings, LogOut, Store } from 'lu
 
 export function UserMenu() {
   const router = useRouter()
-  const { profile } = useUser()
+  const { user, profile } = useUser()
   const mode = useAuthStore((s) => s.mode)
 
   const handleLogout = async () => {
@@ -27,24 +27,27 @@ export function UserMenu() {
     router.refresh()
   }
 
-  if (!profile) return null
+  if (!user) return null
+
+  const nickname = profile?.nickname || user.email?.split('@')[0] || '사용자'
+  const email = profile?.email || user.email || ''
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus:outline-none">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={profile.avatar_url || undefined} />
-          <AvatarFallback className="text-xs">
-            {profile.nickname.slice(0, 2)}
+        <Avatar className="h-8 w-8 border">
+          <AvatarImage src={profile?.avatar_url || undefined} />
+          <AvatarFallback className="text-xs bg-primary/10">
+            <User className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>
           <div className="flex flex-col">
-            <span className="text-sm font-medium">{profile.nickname}</span>
+            <span className="text-sm font-medium">{nickname}</span>
             <span className="text-xs text-muted-foreground">
-              {profile.email}
+              {email}
             </span>
           </div>
         </DropdownMenuLabel>
