@@ -12,7 +12,12 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
   const { seller: sellerId, service: serviceId } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) {
+    const chatUrl = sellerId && serviceId
+      ? `/chat?seller=${sellerId}&service=${serviceId}`
+      : '/chat'
+    redirect(`/login?redirect=${encodeURIComponent(chatUrl)}`)
+  }
 
   // 서버에서 채팅방 목록 로드
   const { data: participantRooms } = await supabase

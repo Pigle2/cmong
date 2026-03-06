@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -24,14 +24,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '자기 자신과 채팅방을 만들 수 없습니다' } }, { status: 400 })
   }
 
+  // Admin client로 RLS 우회 (서버에서 검증 후 사용)
+  const admin = createAdminClient()
+
   // sellerId 존재 확인
-  const { data: seller } = await supabase.from('profiles').select('id').eq('id', sellerId).single()
+  const { data: seller } = await admin.from('profiles').select('id').eq('id', sellerId).single()
   if (!seller) {
     return NextResponse.json({ success: false, error: { code: 'NOT_FOUND', message: '존재하지 않는 사용자입니다' } }, { status: 404 })
   }
 
   // Check if room already exists
-  const { data: existing } = await supabase
+  const { data: existing } = await admin
     .from('chat_rooms')
     .select('id, participants:chat_participants(user_id)')
     .eq('room_type', roomType)
@@ -47,7 +50,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Create new room
-  const { data: newRoom, error } = await supabase
+  const { data: newRoom, error } = await admin
     .from('chat_rooms')
     .insert({
       room_type: roomType,
@@ -57,13 +60,19 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (error || !newRoom) {
+    console.error('chat_rooms INSERT error:', error)
     return NextResponse.json({ success: false, error: { code: 'CREATE_ERROR', message: '채팅방 생성에 실패했습니다' } }, { status: 500 })
   }
 
-  await supabase.from('chat_participants').insert([
+  // 참여자 추가
+  const { error: participantError } = await admin.from('chat_participants').insert([
     { room_id: newRoom.id, user_id: user.id },
     { room_id: newRoom.id, user_id: sellerId },
   ])
+
+  if (participantError) {
+    console.error('chat_participants INSERT error:', participantError)
+  }
 
   return NextResponse.json({ success: true, data: { id: newRoom.id } })
 }

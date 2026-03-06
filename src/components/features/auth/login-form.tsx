@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createClient } from '@/lib/supabase/client'
@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 
 export function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -39,7 +40,8 @@ export function LoginForm() {
       return
     }
 
-    router.push('/')
+    const redirectTo = searchParams.get('redirect')
+    router.push(redirectTo && redirectTo.startsWith('/') ? redirectTo : '/')
     router.refresh()
   }
 

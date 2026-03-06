@@ -1,5 +1,14 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+
+export function createAdminClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { global: { fetch: (url: string | URL | Request, options?: RequestInit) => fetch(url, { ...options, cache: 'no-store' }) } }
+  )
+}
 
 export async function createClient() {
   const cookieStore = await cookies()

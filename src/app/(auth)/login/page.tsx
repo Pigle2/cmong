@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import Link from 'next/link'
 import { LoginForm } from '@/components/features/auth/login-form'
 import {
@@ -17,7 +18,9 @@ export default function LoginPage() {
         <CardDescription>이메일로 로그인하세요</CardDescription>
       </CardHeader>
       <CardContent>
-        <LoginForm />
+        <Suspense>
+          <LoginForm />
+        </Suspense>
       </CardContent>
       <CardFooter className="flex flex-col gap-2 text-center text-sm">
         <Link
