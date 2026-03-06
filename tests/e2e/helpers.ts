@@ -21,7 +21,8 @@ export async function logout(page: Page) {
   const logoutBtn = page.getByText('로그아웃')
   await expect(logoutBtn).toBeVisible({ timeout: 5000 })
   await logoutBtn.click()
-  // handleLogout이 window.location.href = '/' 로 풀 페이지 리로드 수행
+  // handleLogout: fetch('/api/auth/signout') → window.location.href = '/'
+  // 풀 페이지 리로드 완료 후 헤더에 "로그인" 버튼이 표시될 때까지 대기
   await page.waitForLoadState('load', { timeout: TIMEOUT })
-  await page.waitForTimeout(1000)
+  await expect(page.locator('header').getByText('로그인')).toBeVisible({ timeout: TIMEOUT })
 }

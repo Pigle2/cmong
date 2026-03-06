@@ -1,7 +1,6 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/hooks/use-user'
 import { useAuthStore } from '@/stores/auth-store'
 import {
@@ -21,8 +20,7 @@ export function UserMenu() {
   const mode = useAuthStore((s) => s.mode)
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    await fetch('/api/auth/signout', { method: 'POST' })
     window.location.href = '/'
   }
 
