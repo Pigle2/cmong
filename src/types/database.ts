@@ -170,7 +170,10 @@ export interface ChatParticipant {
   id: string
   room_id: string
   user_id: string
+  is_active: boolean
   last_read_at: string | null
+  left_at: string | null
+  rejoined_at: string | null
   created_at: string
   // Joined
   user?: Profile
@@ -179,7 +182,7 @@ export interface ChatParticipant {
 export interface ChatMessage {
   id: string
   room_id: string
-  sender_id: string
+  sender_id: string | null
   message_type: MessageType
   content: string
   file_url: string | null

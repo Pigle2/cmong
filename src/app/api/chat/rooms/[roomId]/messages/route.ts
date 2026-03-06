@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: NextRequest,
@@ -13,10 +13,12 @@ export async function GET(
     return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다' } }, { status: 401 })
   }
 
+  const admin = createAdminClient()
+
   // 참여자 검증: 해당 방의 멤버인지 확인
-  const { data: participant } = await supabase
+  const { data: participant } = await admin
     .from('chat_participants')
-    .select('id')
+    .select('id, rejoined_at')
     .eq('room_id', roomId)
     .eq('user_id', user.id)
     .single()
@@ -25,11 +27,18 @@ export async function GET(
     return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: '접근 권한이 없습니다' } }, { status: 403 })
   }
 
-  const { data: messages } = await supabase
+  // 메시지 조회 (재입장한 경우 rejoined_at 이후 메시지만)
+  let query = admin
     .from('chat_messages')
     .select('*, sender:profiles!sender_id(id, nickname, avatar_url)')
     .eq('room_id', roomId)
     .order('created_at', { ascending: true })
+
+  if (participant.rejoined_at) {
+    query = query.gte('created_at', participant.rejoined_at)
+  }
+
+  const { data: messages } = await query
 
   return NextResponse.json({ success: true, data: messages || [] })
 }
@@ -46,10 +55,12 @@ export async function POST(
     return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다' } }, { status: 401 })
   }
 
+  const admin = createAdminClient()
+
   // 참여자 검증
-  const { data: participant } = await supabase
+  const { data: participant } = await admin
     .from('chat_participants')
-    .select('id')
+    .select('id, is_active')
     .eq('room_id', roomId)
     .eq('user_id', user.id)
     .single()
@@ -58,13 +69,32 @@ export async function POST(
     return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: '접근 권한이 없습니다' } }, { status: 403 })
   }
 
+  if (!participant.is_active) {
+    return NextResponse.json({ success: false, error: { code: 'LEFT_ROOM', message: '나간 채팅방에는 메시지를 보낼 수 없습니다' } }, { status: 403 })
+  }
+
   const { content } = await request.json()
 
   if (!content || typeof content !== 'string' || content.trim().length === 0 || content.length > 5000) {
     return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '유효하지 않은 메시지입니다' } }, { status: 400 })
   }
 
-  const { error } = await supabase.from('chat_messages').insert({
+  // 상대방이 나간 상태(is_active=false)면 자동 재입장 처리
+  const { data: otherParticipant } = await admin
+    .from('chat_participants')
+    .select('id, is_active')
+    .eq('room_id', roomId)
+    .neq('user_id', user.id)
+    .single()
+
+  if (otherParticipant && !otherParticipant.is_active) {
+    await admin
+      .from('chat_participants')
+      .update({ is_active: true, rejoined_at: new Date().toISOString(), left_at: null })
+      .eq('id', otherParticipant.id)
+  }
+
+  const { error } = await admin.from('chat_messages').insert({
     room_id: roomId,
     sender_id: user.id,
     message_type: 'TEXT',
@@ -75,7 +105,7 @@ export async function POST(
     return NextResponse.json({ success: false, error: { code: 'SEND_ERROR', message: error.message } }, { status: 500 })
   }
 
-  await supabase
+  await admin
     .from('chat_rooms')
     .update({ updated_at: new Date().toISOString() })
     .eq('id', roomId)

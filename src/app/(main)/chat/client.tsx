@@ -58,6 +58,7 @@ export default function ChatPageClient({ sellerId, serviceId, initialRooms, curr
       .from('chat_participants')
       .select('room_id')
       .eq('user_id', currentUserId)
+      .eq('is_active', true)
 
     if (!participantRooms || participantRooms.length === 0) return
 
@@ -93,7 +94,7 @@ export default function ChatPageClient({ sellerId, serviceId, initialRooms, curr
       </div>
       <div className={`flex-1 ${!selectedRoom ? 'hidden md:flex' : 'flex'}`}>
         {selectedRoom ? (
-          <ChatMessageThread roomId={selectedRoom} currentUserId={currentUserId} onBack={() => setSelectedRoom(null)} />
+          <ChatMessageThread roomId={selectedRoom} currentUserId={currentUserId} onBack={() => { setSelectedRoom(null); refreshRooms() }} />
         ) : (
           <div className="flex flex-1 items-center justify-center text-muted-foreground">대화를 선택해주세요</div>
         )}

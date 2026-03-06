@@ -16,7 +16,7 @@ export function ChatMessageBubble({ message, isOwn }: ChatMessageBubbleProps) {
   if (message.message_type === 'SYSTEM') {
     return (
       <div className="py-2 text-center text-xs text-muted-foreground">
-        {message.content}
+        ── {message.content} ──
       </div>
     )
   }

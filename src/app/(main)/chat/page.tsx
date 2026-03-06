@@ -19,11 +19,12 @@ export default async function ChatPage({ searchParams }: ChatPageProps) {
     redirect(`/login?redirect=${encodeURIComponent(chatUrl)}`)
   }
 
-  // 서버에서 채팅방 목록 로드
+  // 서버에서 채팅방 목록 로드 (is_active=true인 참여만)
   const { data: participantRooms } = await supabase
     .from('chat_participants')
     .select('room_id')
     .eq('user_id', user.id)
+    .eq('is_active', true)
 
   let rooms: any[] = []
 

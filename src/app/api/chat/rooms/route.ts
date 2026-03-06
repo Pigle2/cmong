@@ -46,6 +46,21 @@ export async function POST(request: NextRequest) {
   )
 
   if (existingRoom) {
+    // 나간 상태(is_active=false)면 재입장 처리
+    const { data: myParticipant } = await admin
+      .from('chat_participants')
+      .select('id, is_active')
+      .eq('room_id', existingRoom.id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (myParticipant && !myParticipant.is_active) {
+      await admin
+        .from('chat_participants')
+        .update({ is_active: true, rejoined_at: new Date().toISOString(), left_at: null })
+        .eq('id', myParticipant.id)
+    }
+
     return NextResponse.json({ success: true, data: { id: existingRoom.id } })
   }
 
