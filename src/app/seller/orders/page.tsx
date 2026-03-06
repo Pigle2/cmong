@@ -40,7 +40,7 @@ export default async function SellerOrdersPage() {
     return (
       <div className="space-y-4">
         {orderList.map((order: any) => (
-          <Link key={order.id} href={`/orders/${order.id}`}>
+          <Link key={order.id} href={`/seller/orders/${order.id}`}>
             <Card className="transition-shadow hover:shadow-md">
               <CardContent className="flex items-center gap-4 p-4">
                 <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-muted">

@@ -10,6 +10,8 @@ export const ORDER_STATUS = {
   REJECTED: '거절됨',
   CANCELLED: '취소됨',
   REVISION_REQUESTED: '수정요청',
+  REFUNDED: '환불완료',
+  DISPUTED: '분쟁중',
 } as const
 
 export const ORDER_STATUS_COLORS: Record<string, string> = {
@@ -21,6 +23,8 @@ export const ORDER_STATUS_COLORS: Record<string, string> = {
   REJECTED: 'bg-red-100 text-red-800',
   CANCELLED: 'bg-gray-100 text-gray-800',
   REVISION_REQUESTED: 'bg-orange-100 text-orange-800',
+  REFUNDED: 'bg-slate-100 text-slate-800',
+  DISPUTED: 'bg-red-200 text-red-900',
 }
 
 export const SERVICE_STATUS = {

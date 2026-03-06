@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **92개 단위 테스트** + **99개 시나리오 테스트** = **191개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **127개 단위 테스트** + **99개 시나리오 테스트** = **226개**.
 > 마지막 업데이트: 2026-03-06
 
 ## 실행 방법
@@ -236,7 +236,80 @@ npx playwright test -g "A-1"
 
 ---
 
-### 11. `full-scenario.spec.ts` — 통합 시나리오 (99개)
+### 11. `bugfix-verification.spec.ts` — 버그 수정 검증 (12개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| BF-1 | price_asc 정렬 → 오름차순 | - | 가격 오름차순 검증 |
+| BF-2 | price_desc 정렬 → 내림차순 | - | 가격 내림차순 검증 |
+| BF-3 | category=design 필터 | - | 디자인 카테고리 서비스 반환 |
+| BF-4 | 상위 카테고리 → 하위 포함 | - | 상위 필터가 하위 결과 포함 |
+| BF-5 | 채팅 메시지 에러 형식 | - | { code, message } 구조 |
+| BF-6 | 같은 판매자 문의 중복 방지 | BUYER | 기존 채팅방 반환 |
+| BF-7 | /services?category=design 카드 | - | 서비스 카드 표시 |
+| BF-8 | 홈 인기+신규 모두 표시 | - | 양쪽 섹션 + 카드 존재 |
+| BF-9 | 알림 벨 → 드롭다운 | BUYER | 클릭 → 팝오버 표시 |
+| BF-10 | 문의하기 → 채팅방 메시지 입력란 | BUYER | 채팅 입력창 표시 |
+| BF-11 | 서비스 등록 가격 min=1 | SELLER | price input min 속성 |
+| BF-12 | 설정 페이지 저장 버튼 | BUYER | 저장 버튼 표시 |
+
+---
+
+### 12. `new-features.spec.ts` — 신규 기능 (35개)
+
+> 배포 전 기능은 자동 스킵 처리 (배포 감지 후 실행)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| **설정 - 비밀번호 변경** | | | |
+| L-4 | 비밀번호 변경 섹션 UI | BUYER | 입력란/버튼 표시 |
+| L-5 | 현재 비밀번호 미입력 오류 | BUYER | 토스트 에러 메시지 |
+| L-6 | 새 비밀번호 8자 미만 오류 | BUYER | 토스트 에러 메시지 |
+| L-7 | 새 비밀번호 불일치 오류 | BUYER | 토스트 에러 메시지 |
+| L-8 | 현재 비밀번호 틀릴 시 에러 | BUYER | 토스트 에러 메시지 |
+| **설정 - 회원 탈퇴** | | | |
+| L-9 | 회원 탈퇴 섹션 UI | BUYER | 안내 문구 + 버튼 |
+| L-10 | 탈퇴 버튼 → 확인 모달 | BUYER | 모달 표시 |
+| L-11 | 탈퇴 모달 - 사유 미선택 에러 | BUYER | 토스트 에러 |
+| L-12 | 탈퇴 모달 - 취소 → 닫힘 | BUYER | 모달 닫힘 |
+| L-13 | 탈퇴 모달 - 사유 목록 표시 | BUYER | 셀렉트 옵션 확인 |
+| **모드 전환** | | | |
+| M-4 | 모드 전환 버튼 헤더 표시 | BUYER | 헤더에 버튼 존재 |
+| M-5 | 판매자 계정 모드 전환 버튼 | SELLER | 모드 전환 버튼 표시 |
+| M-6 | 판매자 모드 전환 클릭 동작 | BUYER | dashboard 이동 or 모달 |
+| M-7 | 구매자 모드 전환 클릭 동작 | SELLER | mypage 이동 or 모드변경 |
+| M-8 | 미등록 판매자 → 등록 안내 모달 | BUYER | 모달 + 등록하기 버튼 |
+| **판매자 주문 상세** | | | |
+| SEL-10 | 주문 상세 기본 구조 | SELLER | 서비스/주문/구매자 정보 |
+| SEL-11 | 주문번호(ORD-) 표시 | SELLER | 주문번호 텍스트 |
+| SEL-12 | 진행 타임라인 표시 | SELLER | 타임라인 카드 |
+| SEL-13 | 목록으로 돌아가기 링크 | SELLER | 링크 클릭 → 목록 이동 |
+| SEL-14 | 구매자 메시지 링크 | SELLER | 링크 표시 |
+| SEL-15 | 처리 가능 상태 주문 처리 카드 | SELLER | 주문 처리 카드 존재 |
+| **주문 취소 API** | | | |
+| ORD-10 | 취소 API 미인증 → 401 | - | 에러 코드 UNAUTHORIZED |
+| ORD-11 | 취소 API 사유 5자 미만 → 400 | BUYER | BAD_REQUEST |
+| ORD-12 | 취소 API 없는 주문 → 404 | BUYER | NOT_FOUND |
+| **납품 처리 API** | | | |
+| ORD-13 | 납품 API 미인증 → 401 | - | UNAUTHORIZED |
+| ORD-14 | 납품 API 없는 주문 → 404 | SELLER | NOT_FOUND |
+| ORD-15 | 납품 API 구매자 시도 → 403 | BUYER | FORBIDDEN |
+| **구매 확정 API** | | | |
+| ORD-16 | 구매확정 API 미인증 → 401 | - | UNAUTHORIZED |
+| ORD-17 | 구매확정 API 없는 주문 → 404 | BUYER | NOT_FOUND |
+| ORD-18 | 구매확정 API 판매자 시도 → 403 | SELLER | FORBIDDEN |
+| **자동 구매 확정 API** | | | |
+| ORD-19 | 자동확정 API 응답 형식 검증 | - | success + confirmed 필드 |
+| **주문 취소 모달 UI** | | | |
+| ORD-20 | 취소 버튼 → 모달 표시 | BUYER | 모달 + 사유 입력란 |
+| ORD-21 | 취소 모달 5자 미만 → 비활성화 | BUYER | 확인 버튼 disabled |
+| ORD-22 | 취소 모달 환불 정보 표시 | BUYER | "환불" 텍스트 |
+| **납품 처리 UI** | | | |
+| ORD-23 | 납품 메시지 입력란 표시 | SELLER | IN_PROGRESS에서 표시 |
+
+---
+
+### 13. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
 `full-scenario.spec.ts`는 단위 파일들과 동일한 테스트 ID를 사용하며, 하나의 파일에서 전체 시나리오를 순차 실행.
@@ -258,6 +331,8 @@ npx playwright test -g "A-1"
 | API | api.spec.ts | 16 | 엔드포인트 + 보안 |
 | 에러 | error.spec.ts | 3 | 404/빈 결과 |
 | 모바일 | mobile.spec.ts | 11 | 반응형 + 엣지케이스 |
+| 버그수정 | bugfix-verification.spec.ts | 12 | API/UI 버그 수정 검증 |
+| 신규기능 | new-features.spec.ts | 35 | 설정개선/모드전환/판매자주문상세/주문취소/납품/자동확정 |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -276,4 +351,5 @@ npx playwright test -g "A-1"
 | API 엔드포인트 | `api.spec.ts` |
 | 에러 처리 | `error.spec.ts` |
 | 모바일/반응형 | `mobile.spec.ts` |
+| 설정/모드전환/주문취소/납품/자동확정 | `new-features.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |
