@@ -7,24 +7,30 @@ test.describe('리뷰', () => {
     await page.goto('/orders')
     await page.waitForTimeout(3000)
     const order = page.locator('a[href*="/orders/"]').first()
-    if (await order.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await order.click()
-      await page.waitForTimeout(3000)
-      const reviewBtn = page.locator('a:has-text("리뷰 작성"), button:has-text("리뷰 작성")')
-      if (await reviewBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await reviewBtn.click()
-        await page.waitForURL(/review/, { timeout: TIMEOUT })
-        const textarea = page.locator('textarea')
-        if (await textarea.isVisible({ timeout: 3000 }).catch(() => false)) {
-          await textarea.fill('E2E 테스트 리뷰입니다. 서비스 품질이 좋습니다.')
-        }
-        const submitBtn = page.locator('button[type="submit"], button:has-text("리뷰 등록"), button:has-text("작성")')
-        if (await submitBtn.first().isVisible({ timeout: 3000 }).catch(() => false)) {
-          await submitBtn.first().click()
-          await page.waitForTimeout(3000)
-        }
-      }
+    if (!await order.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await order.click()
+    await page.waitForTimeout(3000)
+    const reviewBtn = page.locator('a:has-text("리뷰 작성"), button:has-text("리뷰 작성")')
+    if (!await reviewBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      test.skip(true, '리뷰 작성 버튼 없음 (COMPLETED 주문이 아님)')
+      return
+    }
+    await reviewBtn.click()
+    await page.waitForURL(/review/, { timeout: TIMEOUT })
+    const textarea = page.locator('textarea')
+    await expect(textarea).toBeVisible({ timeout: 5000 })
+    await textarea.fill('E2E 테스트 리뷰입니다. 서비스 품질이 매우 좋았습니다.')
+    const submitBtn = page.locator('button[type="submit"], button:has-text("리뷰 등록"), button:has-text("작성")')
+    await expect(submitBtn.first()).toBeVisible({ timeout: 5000 })
+    await submitBtn.first().click()
+    await page.waitForTimeout(3000)
+    // 리뷰 작성 후 주문 상세로 돌아가거나 성공 메시지 표시
+    const success = await page.getByText(/리뷰.*등록|작성.*완료|감사/).first().isVisible({ timeout: 5000 }).catch(() => false)
+    const redirected = !page.url().includes('/review')
+    expect(success || redirected).toBeTruthy()
   })
 
   test('J-1. API: 판매자 리뷰 답글 등록', async ({ page }) => {
@@ -33,13 +39,13 @@ test.describe('리뷰', () => {
     const servicesBody = await servicesRes.json()
     const sellerService = servicesBody.data?.find((s: any) => s.seller?.email === SELLER.email)
     if (!sellerService) {
-      console.log('  판매자 서비스 없음 - 스킵')
+      test.skip(true, '판매자 서비스 없음')
       return
     }
     const reviewsRes = await page.request.get(`/api/reviews?serviceId=${sellerService.id}`)
     const reviewsBody = await reviewsRes.json()
     if (!reviewsBody.data?.length) {
-      console.log('  리뷰 없음 - 스킵')
+      test.skip(true, '리뷰 없음')
       return
     }
     const reviewId = reviewsBody.data[0].id
@@ -54,16 +60,20 @@ test.describe('리뷰', () => {
     const servicesRes = await page.request.get('/api/services')
     const servicesBody = await servicesRes.json()
     const service = servicesBody.data?.[0]
-    if (!service) return
+    if (!service) {
+      test.skip(true, '서비스 없음')
+      return
+    }
     await page.goto(`/services/${service.id}`)
     await page.waitForTimeout(3000)
     const reviewSection = page.getByText('리뷰').first()
-    if (await reviewSection.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await reviewSection.scrollIntoViewIfNeeded()
-      await page.waitForTimeout(1000)
-      const sellerReply = page.getByText('판매자 답변')
-      const hasReply = await sellerReply.first().isVisible({ timeout: 5000 }).catch(() => false)
-      console.log(`  판매자 답변 표시: ${hasReply}`)
+    if (!await reviewSection.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '리뷰 섹션 없음')
+      return
     }
+    await reviewSection.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(1000)
+    const sellerReply = page.getByText('판매자 답변')
+    await expect(sellerReply.first()).toBeVisible({ timeout: 5000 })
   })
 })

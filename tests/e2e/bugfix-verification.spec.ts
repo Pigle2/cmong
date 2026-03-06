@@ -72,7 +72,10 @@ test.describe('버그 수정 검증 - API', () => {
     await login(page, BUYER)
     const listRes = await page.request.get('/api/services')
     const listBody = await listRes.json()
-    if (!listBody.data?.length) return
+    if (!listBody.data?.length) {
+      test.skip(true, '서비스 없음')
+      return
+    }
     const service = listBody.data[0]
     const sellerId = service.seller_id
 
@@ -118,14 +121,11 @@ test.describe('버그 수정 검증 - UI', () => {
     await page.goto('/')
     await page.waitForTimeout(3000)
     const bell = page.locator('header button:has(svg.lucide-bell)')
-    if (await bell.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-      await bell.first().click()
-      await page.waitForTimeout(1500)
-      const popover = page.locator('[data-radix-popper-content-wrapper], [role="dialog"]')
-      const hasPopover = await popover.first().isVisible({ timeout: 5000 }).catch(() => false)
-      const hasContent = await page.getByText(/알림이 없습니다|모두 읽음/).first().isVisible({ timeout: 3000 }).catch(() => false)
-      expect(hasPopover || hasContent).toBeTruthy()
-    }
+    await expect(bell.first()).toBeVisible({ timeout: 5000 })
+    await bell.first().click()
+    await page.waitForTimeout(1500)
+    const popover = page.locator('[data-radix-popper-content-wrapper], [role="dialog"]')
+    await expect(popover.first()).toBeVisible({ timeout: 5000 })
   })
 
   test('BF-10. UI: 문의하기 → 채팅방 이동 및 메시지 입력란 표시', async ({ page }) => {
@@ -150,10 +150,9 @@ test.describe('버그 수정 검증 - UI', () => {
     await page.goto('/seller/services/new')
     await page.waitForTimeout(3000)
     const priceInput = page.locator('input[type="number"]').first()
-    if (await priceInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const minVal = await priceInput.getAttribute('min')
-      expect(minVal).toBe('1')
-    }
+    await expect(priceInput).toBeVisible({ timeout: 5000 })
+    const minVal = await priceInput.getAttribute('min')
+    expect(minVal).toBe('1')
   })
 
   test('BF-12. UI: 마이페이지 설정 페이지 로드 및 저장 버튼', async ({ page }) => {

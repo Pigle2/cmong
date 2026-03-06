@@ -41,10 +41,10 @@ test.describe('서비스 - 홈/검색/상세', () => {
     await page.goto('/services')
     await page.waitForTimeout(2000)
     const sortLink = page.locator('a[href*="sort=newest"], button:has-text("최신순")').first()
-    if (await sortLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await sortLink.click()
-      await page.waitForTimeout(2000)
-    }
+    await expect(sortLink).toBeVisible({ timeout: 5000 })
+    await sortLink.click()
+    await page.waitForTimeout(2000)
+    expect(page.url()).toContain('sort=newest')
   })
 
   test('A-6. 서비스 상세 페이지 - 정보 표시', async ({ page }) => {
@@ -70,12 +70,14 @@ test.describe('서비스 - 찜하기', () => {
     await card.click()
     await page.waitForURL(/services\//, { timeout: TIMEOUT })
     const favBtn = page.locator('button').filter({ has: page.locator('svg.lucide-heart, svg') }).first()
-    if (await favBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await favBtn.click()
-      await page.waitForTimeout(2000)
-      await favBtn.click()
-      await page.waitForTimeout(1000)
-    }
+    await expect(favBtn).toBeVisible({ timeout: 5000 })
+    await favBtn.click()
+    await page.waitForTimeout(2000)
+    // 토글 후 버튼이 여전히 존재하고 클릭 가능해야 함
+    await expect(favBtn).toBeVisible()
+    await favBtn.click()
+    await page.waitForTimeout(1000)
+    await expect(favBtn).toBeVisible()
   })
 })
 
@@ -134,11 +136,13 @@ test.describe('서비스 - 판매자 CRUD', () => {
     await page.goto('/seller/services')
     await page.waitForTimeout(3000)
     const editLink = page.locator('a[href*="/edit"], button:has-text("수정"), button:has-text("편집")').first()
-    if (await editLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await editLink.click()
-      await page.waitForTimeout(3000)
-      await expect(page.locator('body')).toContainText(/수정|편집|저장/, { timeout: TIMEOUT })
+    if (!await editLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '편집 링크 없음')
+      return
     }
+    await editLink.click()
+    await page.waitForTimeout(3000)
+    await expect(page.locator('body')).toContainText(/수정|편집|저장/, { timeout: TIMEOUT })
   })
 })
 
@@ -149,80 +153,68 @@ test.describe('서비스 - 검색 필터', () => {
     await page.goto('/services')
     await page.waitForTimeout(2000)
     const catLink = page.locator('a[href*="services?category="]').first()
-    if (await catLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      const catText = await catLink.textContent()
-      await catLink.click()
-      await page.waitForTimeout(2000)
-      expect(page.url()).toContain('category=')
-      await expect(page.getByText(/총.*\d+.*개의 서비스/)).toBeVisible({ timeout: TIMEOUT })
-      console.log(`  선택한 카테고리: ${catText}`)
-    }
+    await expect(catLink).toBeVisible({ timeout: 5000 })
+    await catLink.click()
+    await page.waitForTimeout(2000)
+    expect(page.url()).toContain('category=')
+    await expect(page.getByText(/총.*\d+.*개의 서비스/)).toBeVisible({ timeout: TIMEOUT })
   })
 
   test('N-2. 정렬 옵션 - 최신순', async ({ page }) => {
     await page.goto('/services')
     await page.waitForTimeout(2000)
     const sortLink = page.locator('a[href*="sort=newest"]')
-    if (await sortLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await sortLink.click()
-      await page.waitForTimeout(2000)
-      expect(page.url()).toContain('sort=newest')
-    }
+    await expect(sortLink).toBeVisible({ timeout: 5000 })
+    await sortLink.click()
+    await page.waitForTimeout(2000)
+    expect(page.url()).toContain('sort=newest')
   })
 
   test('N-3. 정렬 옵션 - 평점순', async ({ page }) => {
     await page.goto('/services')
     await page.waitForTimeout(2000)
     const sortLink = page.locator('a[href*="sort=rating"]')
-    if (await sortLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await sortLink.click()
-      await page.waitForTimeout(2000)
-      expect(page.url()).toContain('sort=rating')
-    }
+    await expect(sortLink).toBeVisible({ timeout: 5000 })
+    await sortLink.click()
+    await page.waitForTimeout(2000)
+    expect(page.url()).toContain('sort=rating')
   })
 
   test('N-4. 정렬 옵션 - 가격 낮은순', async ({ page }) => {
     await page.goto('/services')
     await page.waitForTimeout(2000)
     const sortLink = page.locator('a[href*="sort=price_asc"]')
-    if (await sortLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await sortLink.click()
-      await page.waitForTimeout(2000)
-      expect(page.url()).toContain('sort=price_asc')
-    }
+    await expect(sortLink).toBeVisible({ timeout: 5000 })
+    await sortLink.click()
+    await page.waitForTimeout(2000)
+    expect(page.url()).toContain('sort=price_asc')
   })
 
   test('N-5. 정렬 옵션 - 가격 높은순', async ({ page }) => {
     await page.goto('/services')
     await page.waitForTimeout(2000)
     const sortLink = page.locator('a[href*="sort=price_desc"]')
-    if (await sortLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await sortLink.click()
-      await page.waitForTimeout(2000)
-      expect(page.url()).toContain('sort=price_desc')
-    }
+    await expect(sortLink).toBeVisible({ timeout: 5000 })
+    await sortLink.click()
+    await page.waitForTimeout(2000)
+    expect(page.url()).toContain('sort=price_desc')
   })
 
   test('N-6. 카테고리 + 정렬 조합', async ({ page }) => {
     await page.goto('/services')
     await page.waitForTimeout(2000)
     const catLink = page.locator('a[href*="services?category="]').first()
-    if (await catLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await catLink.click()
-      await page.waitForURL(/category=/, { timeout: TIMEOUT })
-      const sortLink = page.locator('a[href*="sort=newest"]')
-      const hasSortLink = await sortLink.isVisible({ timeout: 5000 }).catch(() => false)
-      console.log(`  카테고리 선택 후 정렬 옵션 표시: ${hasSortLink}`)
-      if (hasSortLink) {
-        const href = await sortLink.getAttribute('href')
-        console.log(`  정렬 링크 href: ${href}`)
-        expect(href).toContain('category=')
-        expect(href).toContain('sort=newest')
-        await sortLink.click()
-        await page.waitForURL(/sort=/, { timeout: TIMEOUT })
-        expect(page.url()).toContain('sort=newest')
-      }
-    }
+    await expect(catLink).toBeVisible({ timeout: 5000 })
+    await catLink.click()
+    await page.waitForURL(/category=/, { timeout: TIMEOUT })
+    const sortLink = page.locator('a[href*="sort=newest"]')
+    await expect(sortLink).toBeVisible({ timeout: 5000 })
+    const href = await sortLink.getAttribute('href')
+    expect(href).toContain('category=')
+    expect(href).toContain('sort=newest')
+    await sortLink.click()
+    await page.waitForURL(/sort=/, { timeout: TIMEOUT })
+    expect(page.url()).toContain('sort=newest')
   })
 
   test('N-9. 서비스 등록 전체 플로우 - 폼 제출까지', async ({ page }) => {
@@ -277,7 +269,7 @@ test.describe('서비스 - 검색 필터', () => {
     await page.waitForTimeout(3000)
     const editLink = page.locator('a[href*="/edit"]').first()
     if (!await editLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('  편집 가능한 서비스 없음 - 스킵')
+      test.skip(true, '편집 가능한 서비스 없음')
       return
     }
     await editLink.click()

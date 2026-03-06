@@ -252,8 +252,7 @@ test.describe('인증 - 설정', () => {
     await saveBtn.click()
     await page.waitForTimeout(3000)
     const toast = page.getByText('프로필이 수정되었습니다')
-    const hasToast = await toast.isVisible({ timeout: 5000 }).catch(() => false)
-    console.log(`  저장 성공 토스트: ${hasToast}`)
+    await expect(toast).toBeVisible({ timeout: 5000 })
   })
 
   test('L-3. 마이페이지에서 설정 페이지 이동', async ({ page }) => {

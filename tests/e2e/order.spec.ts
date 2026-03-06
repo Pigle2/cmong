@@ -63,28 +63,31 @@ test.describe('주문 - 구매자', () => {
     await page.goto('/orders')
     await page.waitForTimeout(3000)
     const orderLink = page.locator('a[href*="/orders/"]').first()
-    if (await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await orderLink.click()
-      await page.waitForURL(/orders\//, { timeout: TIMEOUT })
-      await expect(page.getByText('주문 상세')).toBeVisible({ timeout: TIMEOUT })
-      await expect(page.getByText(/ORD-/).first()).toBeVisible({ timeout: TIMEOUT })
-      await expect(page.getByText('주문 정보')).toBeVisible()
-      await expect(page.getByText('서비스 정보')).toBeVisible()
-      await expect(page.getByText('진행 상황')).toBeVisible()
+    if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await orderLink.click()
+    await page.waitForURL(/orders\//, { timeout: TIMEOUT })
+    await expect(page.getByText('주문 상세')).toBeVisible({ timeout: TIMEOUT })
+    await expect(page.getByText(/ORD-/).first()).toBeVisible({ timeout: TIMEOUT })
+    await expect(page.getByText('주문 정보')).toBeVisible()
+    await expect(page.getByText('서비스 정보')).toBeVisible()
+    await expect(page.getByText('진행 상황')).toBeVisible()
   })
 
   test('C-4. 주문 상세 → 구매자 액션 버튼 표시', async ({ page }) => {
     await page.goto('/orders')
     await page.waitForTimeout(3000)
     const orderLink = page.locator('a[href*="/orders/"]').first()
-    if (await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await orderLink.click()
-      await page.waitForURL(/orders\//, { timeout: TIMEOUT })
-      const actions = page.locator('button:has-text("구매 확정"), button:has-text("수정 요청"), button:has-text("주문 취소"), button:has-text("리뷰 작성")')
-      const hasActions = await actions.first().isVisible({ timeout: 5000 }).catch(() => false)
-      console.log(`  구매자 액션 버튼 존재: ${hasActions}`)
+    if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await orderLink.click()
+    await page.waitForURL(/orders\//, { timeout: TIMEOUT })
+    const actions = page.locator('button:has-text("구매 확정"), button:has-text("수정 요청"), button:has-text("주문 취소"), button:has-text("리뷰 작성")')
+    await expect(actions.first()).toBeVisible({ timeout: 5000 })
   })
 })
 
@@ -96,18 +99,21 @@ test.describe('주문 - 상태 전이', () => {
     await page.goto('/seller/orders')
     await page.waitForTimeout(3000)
     const paidOrder = page.locator('a[href*="/seller/orders/"]').first()
-    if (await paidOrder.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await paidOrder.click()
-      await page.waitForTimeout(3000)
-      const acceptBtn = page.locator('button:has-text("수락")')
-      if (await acceptBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await acceptBtn.click()
-        await page.waitForTimeout(3000)
-        console.log('  주문 수락 클릭 완료')
-      } else {
-        console.log('  수락 버튼 없음 (이미 수락됨 또는 다른 상태)')
-      }
+    if (!await paidOrder.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await paidOrder.click()
+    await page.waitForTimeout(3000)
+    const acceptBtn = page.locator('button:has-text("수락")')
+    if (!await acceptBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      test.skip(true, '수락 버튼 없음 (PAID 상태가 아님)')
+      return
+    }
+    await acceptBtn.click()
+    await page.waitForTimeout(3000)
+    // 수락 후 상태 변경 확인: 수락 버튼이 사라지거나 상태 텍스트 변경
+    await expect(acceptBtn).not.toBeVisible({ timeout: 5000 })
   })
 
   test('E-2. 판매자: 작업 시작 (ACCEPTED → IN_PROGRESS)', async ({ page }) => {
@@ -115,16 +121,20 @@ test.describe('주문 - 상태 전이', () => {
     await page.goto('/seller/orders')
     await page.waitForTimeout(3000)
     const order = page.locator('a[href*="/seller/orders/"]').first()
-    if (await order.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await order.click()
-      await page.waitForTimeout(3000)
-      const startBtn = page.locator('button:has-text("작업 시작")')
-      if (await startBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await startBtn.click()
-        await page.waitForTimeout(3000)
-        console.log('  작업 시작 클릭 완료')
-      }
+    if (!await order.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await order.click()
+    await page.waitForTimeout(3000)
+    const startBtn = page.locator('button:has-text("작업 시작")')
+    if (!await startBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      test.skip(true, '작업 시작 버튼 없음 (ACCEPTED 상태가 아님)')
+      return
+    }
+    await startBtn.click()
+    await page.waitForTimeout(3000)
+    await expect(startBtn).not.toBeVisible({ timeout: 5000 })
   })
 
   test('E-3. 판매자: 납품하기 (IN_PROGRESS → DELIVERED)', async ({ page }) => {
@@ -132,16 +142,20 @@ test.describe('주문 - 상태 전이', () => {
     await page.goto('/seller/orders')
     await page.waitForTimeout(3000)
     const order = page.locator('a[href*="/seller/orders/"]').first()
-    if (await order.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await order.click()
-      await page.waitForTimeout(3000)
-      const deliverBtn = page.locator('button:has-text("납품")')
-      if (await deliverBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await deliverBtn.click()
-        await page.waitForTimeout(3000)
-        console.log('  납품 클릭 완료')
-      }
+    if (!await order.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await order.click()
+    await page.waitForTimeout(3000)
+    const deliverBtn = page.locator('button:has-text("납품")')
+    if (!await deliverBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      test.skip(true, '납품 버튼 없음 (IN_PROGRESS 상태가 아님)')
+      return
+    }
+    await deliverBtn.click()
+    await page.waitForTimeout(3000)
+    await expect(deliverBtn).not.toBeVisible({ timeout: 5000 })
   })
 
   test('E-4. 구매자: 구매 확정 (DELIVERED → COMPLETED)', async ({ page }) => {
@@ -149,16 +163,20 @@ test.describe('주문 - 상태 전이', () => {
     await page.goto('/orders')
     await page.waitForTimeout(3000)
     const order = page.locator('a[href*="/orders/"]').first()
-    if (await order.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await order.click()
-      await page.waitForTimeout(3000)
-      const completeBtn = page.locator('button:has-text("구매 확정")')
-      if (await completeBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await completeBtn.click()
-        await page.waitForTimeout(3000)
-        console.log('  구매 확정 클릭 완료')
-      }
+    if (!await order.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await order.click()
+    await page.waitForTimeout(3000)
+    const completeBtn = page.locator('button:has-text("구매 확정")')
+    if (!await completeBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      test.skip(true, '구매 확정 버튼 없음 (DELIVERED 상태가 아님)')
+      return
+    }
+    await completeBtn.click()
+    await page.waitForTimeout(3000)
+    await expect(completeBtn).not.toBeVisible({ timeout: 5000 })
   })
 })
 
@@ -171,7 +189,7 @@ test.describe('주문 - 거절/취소', () => {
     await page.waitForTimeout(3000)
     const orderLink = page.locator('a[href*="/seller/orders/"]').first()
     if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('  주문 없음 - 스킵')
+      test.skip(true, '주문 없음')
       return
     }
     await orderLink.click()
@@ -196,7 +214,7 @@ test.describe('주문 - 거절/취소', () => {
     await page.waitForTimeout(3000)
     const orderLink = page.locator('a[href*="/orders/"]').first()
     if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('  주문 없음 - 스킵')
+      test.skip(true, '주문 없음')
       return
     }
     await orderLink.click()
@@ -223,13 +241,15 @@ test.describe('주문 - 수정 요청', () => {
     await page.goto('/orders')
     await page.waitForTimeout(3000)
     const orderLink = page.locator('a[href*="/orders/"]').first()
-    if (await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await orderLink.click()
-      await page.waitForURL(/orders\//, { timeout: TIMEOUT })
-      const revisionBtn = page.locator('button:has-text("수정 요청")')
-      const hasRevision = await revisionBtn.isVisible({ timeout: 5000 }).catch(() => false)
-      console.log(`  수정 요청 버튼 존재: ${hasRevision}`)
+    if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await orderLink.click()
+    await page.waitForURL(/orders\//, { timeout: TIMEOUT })
+    // 주문 상세 페이지에서 액션 버튼 중 하나가 보이는지 확인
+    const anyAction = page.locator('button:has-text("수정 요청"), button:has-text("구매 확정"), button:has-text("주문 취소"), button:has-text("리뷰 작성")')
+    await expect(anyAction.first()).toBeVisible({ timeout: 5000 })
   })
 
   test('I-2. 구매자: 수정요청 시 메모 입력 가능', async ({ page }) => {
@@ -237,16 +257,14 @@ test.describe('주문 - 수정 요청', () => {
     await page.goto('/orders')
     await page.waitForTimeout(3000)
     const orderLink = page.locator('a[href*="/orders/"]').first()
-    if (await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await orderLink.click()
-      await page.waitForURL(/orders\//, { timeout: TIMEOUT })
-      const memo = page.locator('textarea[placeholder*="메모"]')
-      const hasMemo = await memo.isVisible({ timeout: 5000 }).catch(() => false)
-      console.log(`  메모 입력 필드 존재: ${hasMemo}`)
-      if (hasMemo) {
-        await memo.fill('수정 사항: 색상을 파란색으로 변경해주세요.')
-      }
+    if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await orderLink.click()
+    await page.waitForURL(/orders\//, { timeout: TIMEOUT })
+    // 주문 상세 페이지 로드 확인
+    await expect(page.getByText('주문 상세')).toBeVisible({ timeout: TIMEOUT })
   })
 
   test('I-3. 판매자: 수정요청된 주문 상태 확인', async ({ page }) => {
@@ -254,12 +272,14 @@ test.describe('주문 - 수정 요청', () => {
     await page.goto('/seller/orders')
     await page.waitForTimeout(3000)
     const orderLink = page.locator('a[href*="/seller/orders/"]').first()
-    if (await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await orderLink.click()
-      await page.waitForTimeout(3000)
-      const deliverBtn = page.locator('button:has-text("납품")')
-      const hasDeliver = await deliverBtn.isVisible({ timeout: 5000 }).catch(() => false)
-      console.log(`  재납품 버튼 존재: ${hasDeliver}`)
+    if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await orderLink.click()
+    await page.waitForTimeout(3000)
+    // 주문 상세 페이지에서 액션 버튼 존재 확인
+    const anyAction = page.locator('button:has-text("수락"), button:has-text("납품"), button:has-text("작업 시작"), button:has-text("거절")')
+    await expect(anyAction.first()).toBeVisible({ timeout: 5000 })
   })
 })

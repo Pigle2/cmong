@@ -1,50 +1,11 @@
 import { test, expect, type Page } from '@playwright/test'
+import { BUYER, SELLER, TIMEOUT, login, logout } from './helpers'
 
 /**
  * 크몽 클론 - 전체 기능 테스트 시나리오
  *
- * 테스트 계정:
- *   구매자: buyer1@test.com / Test1234!
- *   판매자: seller1@test.com / Test1234!
- *
  * 실행: npx playwright test tests/e2e/full-scenario.spec.ts --reporter=list
  */
-
-const BUYER = { email: 'buyer1@test.com', password: 'Test1234!' }
-const SELLER = { email: 'seller1@test.com', password: 'Test1234!' }
-const TIMEOUT = 15000
-
-// ── Helper ──────────────────────────────────────────────────
-
-async function login(page: Page, account: typeof BUYER) {
-  await page.goto('/login')
-  await page.fill('input[type="email"]', account.email)
-  await page.fill('input[type="password"]', account.password)
-  await page.click('button[type="submit"]')
-  // 로그인 후 홈페이지 또는 다른 페이지로 이동 확인
-  await expect(page).not.toHaveURL(/login/, { timeout: TIMEOUT })
-}
-
-async function logout(page: Page) {
-  // JavaScript로 직접 Supabase signOut 호출
-  await page.evaluate(async () => {
-    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm') as any
-    // localStorage에서 Supabase 세션 키 삭제
-    for (const key of Object.keys(localStorage)) {
-      if (key.includes('supabase') || key.includes('sb-')) {
-        localStorage.removeItem(key)
-      }
-    }
-    // 쿠키 삭제
-    document.cookie.split(';').forEach(c => {
-      const name = c.trim().split('=')[0]
-      if (name.includes('sb-') || name.includes('supabase')) {
-        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
-      }
-    })
-  }).catch(() => {})
-  await page.waitForTimeout(1000)
-}
 
 // ════════════════════════════════════════════════════════════
 // A. 비로그인 상태 테스트

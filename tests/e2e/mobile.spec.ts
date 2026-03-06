@@ -13,8 +13,7 @@ test.describe('모바일 UI', () => {
     await page.goto('/')
     await page.waitForTimeout(2000)
     const nav = page.locator('nav.fixed, [class*="fixed"][class*="bottom"]')
-    const hasNav = await nav.first().isVisible({ timeout: 5000 }).catch(() => false)
-    console.log(`  모바일 네비게이션 표시: ${hasNav}`)
+    await expect(nav.first()).toBeVisible({ timeout: 5000 })
   })
 
   test('G-3. 모바일 서비스 카드 1열 표시', async ({ page }) => {
@@ -27,8 +26,7 @@ test.describe('모바일 UI', () => {
     await page.goto('/')
     await page.waitForTimeout(3000)
     const nav = page.locator('nav.fixed, [class*="fixed"][class*="bottom"]')
-    const hasNav = await nav.first().isVisible({ timeout: 5000 }).catch(() => false)
-    console.log(`  로그인 후 모바일 네비게이션 표시: ${hasNav}`)
+    await expect(nav.first()).toBeVisible({ timeout: 5000 })
   })
 
   test('G-5. 모바일 채팅 - 뒤로가기 버튼', async ({ page }) => {
@@ -37,7 +35,7 @@ test.describe('모바일 UI', () => {
     await page.waitForTimeout(5000)
     const roomBtn = page.locator('button[class*="border-b"][class*="w-full"]').first()
     if (!await roomBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('  채팅방 없음 - 스킵')
+      test.skip(true, '채팅방 없음')
       return
     }
     await roomBtn.click()
@@ -109,14 +107,12 @@ test.describe('UI 엣지케이스', () => {
     await page.waitForTimeout(3000)
     // 아무것도 입력하지 않고 등록 시도
     const submitBtn = page.locator('button:has-text("등록"), button:has-text("발행")').first()
-    if (await submitBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await submitBtn.click()
-      await page.waitForTimeout(2000)
-      // 에러 토스트 또는 페이지 유지
-      const hasError = await page.getByText(/필수|카테고리|제목/).isVisible({ timeout: 5000 }).catch(() => false)
-      const stayedOnPage = page.url().includes('/new')
-      expect(hasError || stayedOnPage).toBeTruthy()
-    }
+    await expect(submitBtn).toBeVisible({ timeout: 5000 })
+    await submitBtn.click()
+    await page.waitForTimeout(2000)
+    // 에러 메시지 표시 또는 페이지 유지
+    const stayedOnPage = page.url().includes('/new')
+    expect(stayedOnPage).toBeTruthy()
   })
 
   test('U-5. 설정 페이지 - 저장 성공 토스트 표시', async ({ page }) => {
@@ -124,15 +120,11 @@ test.describe('UI 엣지케이스', () => {
     await page.goto('/mypage/settings')
     await page.waitForTimeout(5000)
     const bioTextarea = page.locator('textarea')
-    if (await bioTextarea.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await bioTextarea.fill('토스트 테스트 자기소개')
-    }
+    await expect(bioTextarea).toBeVisible({ timeout: 5000 })
+    await bioTextarea.fill('토스트 테스트 자기소개')
     const saveBtn = page.getByRole('button', { name: '저장' })
-    if (await saveBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await saveBtn.click()
-      // 성공 토스트 확인
-      const hasToast = await page.getByText(/수정되었|저장되었|성공/).isVisible({ timeout: 5000 }).catch(() => false)
-      console.log(`  저장 토스트 표시: ${hasToast}`)
-    }
+    await expect(saveBtn).toBeVisible({ timeout: 5000 })
+    await saveBtn.click()
+    await expect(page.getByText(/수정되었|저장되었|성공/)).toBeVisible({ timeout: 5000 })
   })
 })

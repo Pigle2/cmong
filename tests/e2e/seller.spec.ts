@@ -26,13 +26,14 @@ test.describe('판매자 관리', () => {
     await page.goto('/seller/orders')
     await page.waitForTimeout(3000)
     const orderLink = page.locator('a[href*="/seller/orders/"]').first()
-    if (await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await orderLink.click()
-      await page.waitForURL(/seller\/orders\//, { timeout: TIMEOUT })
-      const actions = page.locator('button:has-text("수락"), button:has-text("거절"), button:has-text("작업 시작"), button:has-text("납품")')
-      const hasActions = await actions.first().isVisible({ timeout: 5000 }).catch(() => false)
-      console.log(`  판매자 액션 버튼 존재: ${hasActions}`)
+    if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '주문 없음')
+      return
     }
+    await orderLink.click()
+    await page.waitForURL(/seller\/orders\//, { timeout: TIMEOUT })
+    const actions = page.locator('button:has-text("수락"), button:has-text("거절"), button:has-text("작업 시작"), button:has-text("납품")')
+    await expect(actions.first()).toBeVisible({ timeout: 5000 })
   })
 
   test('D-7. 판매자 프로필 관리 페이지', async ({ page }) => {
@@ -40,21 +41,18 @@ test.describe('판매자 관리', () => {
     await page.waitForTimeout(3000)
     await expect(page.getByText(/판매자 프로필|프로필 관리/)).toBeVisible({ timeout: TIMEOUT })
     const nameInput = page.locator('input[name*="name"], input[placeholder*="활동명"]').first()
-    const hasInput = await nameInput.isVisible({ timeout: 3000 }).catch(() => false)
-    console.log(`  프로필 입력 필드 존재: ${hasInput}`)
+    await expect(nameInput).toBeVisible({ timeout: 5000 })
   })
 
   test('D-8. 판매자 프로필 저장', async ({ page }) => {
     await page.goto('/seller/profile')
     await page.waitForTimeout(3000)
     const textarea = page.locator('textarea').first()
-    if (await textarea.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await textarea.fill('E2E 테스트로 업데이트된 소개입니다.')
-    }
+    await expect(textarea).toBeVisible({ timeout: 5000 })
+    await textarea.fill('E2E 테스트로 업데이트된 소개입니다.')
     const saveBtn = page.locator('button:has-text("저장"), button[type="submit"]').first()
-    if (await saveBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await saveBtn.click()
-      await page.waitForTimeout(3000)
-    }
+    await expect(saveBtn).toBeVisible({ timeout: 5000 })
+    await saveBtn.click()
+    await page.waitForTimeout(3000)
   })
 })

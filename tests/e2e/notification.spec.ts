@@ -7,11 +7,9 @@ test.describe('알림', () => {
     await page.goto('/')
     await page.waitForTimeout(3000)
     const bell = page.locator('header').locator('svg.lucide-bell, button:has(svg.lucide-bell)')
-    const hasBell = await bell.first().isVisible({ timeout: 5000 }).catch(() => false)
-    if (hasBell) {
-      await bell.first().click()
-      await page.waitForTimeout(2000)
-    }
+    await expect(bell.first()).toBeVisible({ timeout: 5000 })
+    await bell.first().click()
+    await page.waitForTimeout(2000)
   })
 
   test('K-1. API: 알림 목록 조회', async ({ page }) => {
@@ -49,13 +47,11 @@ test.describe('알림', () => {
     await page.goto('/')
     await page.waitForTimeout(3000)
     const bell = page.locator('header button:has(svg.lucide-bell)')
-    if (await bell.first().isVisible({ timeout: 5000 }).catch(() => false)) {
-      await bell.first().click()
-      await page.waitForTimeout(2000)
-      const notifPanel = page.locator('[role="menu"], [class*="dropdown"], [class*="popover"]')
-      const hasPanel = await notifPanel.first().isVisible({ timeout: 3000 }).catch(() => false)
-      console.log(`  알림 패널 표시: ${hasPanel}`)
-    }
+    await expect(bell.first()).toBeVisible({ timeout: 5000 })
+    await bell.first().click()
+    await page.waitForTimeout(2000)
+    const notifPanel = page.locator('[data-radix-popper-content-wrapper], [role="dialog"], [role="menu"], [class*="popover"]')
+    await expect(notifPanel.first()).toBeVisible({ timeout: 5000 })
   })
 
   test('K-4. 판매자에게도 알림 존재', async ({ page }) => {

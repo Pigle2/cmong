@@ -16,8 +16,7 @@ test.describe('채팅 - 기본', () => {
     await page.waitForTimeout(5000)
     const body = page.locator('body')
     const hasChat = await body.getByText(/대화를 선택|대화 목록|채팅/).first().isVisible({ timeout: TIMEOUT }).catch(() => false)
-    const hasLogin = await body.getByText('로그인이 필요합니다').isVisible({ timeout: 3000 }).catch(() => false)
-    expect(hasChat || !hasLogin).toBeTruthy()
+    expect(hasChat).toBeTruthy()
   })
 
   test('B-8. 서비스 상세 → 문의하기 → 채팅방 이동', async ({ page }) => {
@@ -38,24 +37,26 @@ test.describe('채팅 - 기본', () => {
     await page.waitForTimeout(5000)
 
     const roomItem = page.locator(ROOM_BTN).first()
-    if (await roomItem.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await roomItem.click()
-
-      const input = page.locator('input[placeholder*="메시지"]')
-      await expect(input).toBeVisible({ timeout: TIMEOUT })
-      await expect(page.getByText('메시지 로딩 중...')).not.toBeVisible({ timeout: TIMEOUT })
-
-      const hasBubble = await page.locator('[class*="rounded"]').filter({ hasText: /.+/ }).first().isVisible({ timeout: 5000 }).catch(() => false)
-      const isEmpty = await page.getByText('첫 메시지를 보내보세요').isVisible({ timeout: 3000 }).catch(() => false)
-      expect(hasBubble || isEmpty).toBeTruthy()
-
-      const testMsg = `테스트-${Date.now()}`
-      await input.fill(testMsg)
-      const sendBtn = page.locator('button[type="submit"]')
-      await sendBtn.click()
-      await page.waitForTimeout(3000)
-      await expect(page.getByText(testMsg)).toBeVisible({ timeout: TIMEOUT })
+    if (!await roomItem.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(true, '채팅방 없음')
+      return
     }
+    await roomItem.click()
+
+    const input = page.locator('input[placeholder*="메시지"]')
+    await expect(input).toBeVisible({ timeout: TIMEOUT })
+    await expect(page.getByText('메시지 로딩 중...')).not.toBeVisible({ timeout: TIMEOUT })
+
+    const hasBubble = await page.locator('[class*="rounded"]').filter({ hasText: /.+/ }).first().isVisible({ timeout: 5000 }).catch(() => false)
+    const isEmpty = await page.getByText('첫 메시지를 보내보세요').isVisible({ timeout: 3000 }).catch(() => false)
+    expect(hasBubble || isEmpty).toBeTruthy()
+
+    const testMsg = `테스트-${Date.now()}`
+    await input.fill(testMsg)
+    const sendBtn = page.locator('button[type="submit"]')
+    await sendBtn.click()
+    await page.waitForTimeout(3000)
+    await expect(page.getByText(testMsg)).toBeVisible({ timeout: TIMEOUT })
   })
 })
 
@@ -100,7 +101,7 @@ test.describe('채팅 - 실시간', () => {
       const buyerOk = await selectRoomByName(buyerPage, '디자인마스터')
       const sellerOk = await selectRoomByName(sellerPage, '구매자김철수')
       if (!buyerOk || !sellerOk) {
-        console.log('  채팅방 없음 - 스킵')
+        test.skip(true, '채팅방 없음')
         return
       }
 
@@ -138,7 +139,7 @@ test.describe('채팅 - 실시간', () => {
       const buyerOk = await selectRoomByName(buyerPage, '디자인마스터')
       const sellerOk = await selectRoomByName(sellerPage, '구매자김철수')
       if (!buyerOk || !sellerOk) {
-        console.log('  채팅방 없음 - 스킵')
+        test.skip(true, '채팅방 없음')
         return
       }
 
@@ -172,7 +173,7 @@ test.describe('채팅 - 실시간', () => {
       const buyerOk = await selectRoomByName(buyerPage, '디자인마스터')
       const sellerOk = await selectRoomByName(sellerPage, '구매자김철수')
       if (!buyerOk || !sellerOk) {
-        console.log('  채팅방 없음 - 스킵')
+        test.skip(true, '채팅방 없음')
         return
       }
 

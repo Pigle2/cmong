@@ -50,7 +50,7 @@ test.describe('채팅 - 나가기', () => {
     await login(page, BUYER)
     const entered = await enterFirstChatRoom(page)
     if (!entered) {
-      console.log('  채팅방 없음 - 스킵')
+      test.skip(true, '채팅방 없음')
       return
     }
 
@@ -67,7 +67,7 @@ test.describe('채팅 - 나가기', () => {
     await login(page, BUYER)
     const entered = await enterFirstChatRoom(page)
     if (!entered) {
-      console.log('  채팅방 없음 - 스킵')
+      test.skip(true, '채팅방 없음')
       return
     }
 
@@ -104,7 +104,7 @@ test.describe('채팅 - 나가기', () => {
     await page.waitForTimeout(5000)
     const firstRoom = page.locator(ROOM_BTN).first()
     if (!await firstRoom.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('  채팅방 없음 - 스킵')
+      test.skip(true, '채팅방 없음')
       return
     }
 
@@ -153,14 +153,14 @@ test.describe('채팅 - 나가기', () => {
       // 구매자: 판매자와의 채팅방 진입
       const buyerOk = await selectRoomByName(buyerPage, '디자인마스터')
       if (!buyerOk) {
-        console.log('  구매자 채팅방 없음 - 스킵')
+        test.skip(true, '구매자 채팅방 없음')
         return
       }
 
       // 판매자: 같은 채팅방 진입
       const sellerOk = await selectRoomByName(sellerPage, '구매자김철수')
       if (!sellerOk) {
-        console.log('  판매자 채팅방 없음 - 스킵')
+        test.skip(true, '판매자 채팅방 없음')
         return
       }
 
@@ -179,7 +179,7 @@ test.describe('채팅 - 나가기', () => {
       // 채팅 메시지 영역의 "── OOO님이 나갔습니다 ──" 시스템 메시지
       const systemMsg = sellerPage.getByText(/── .+님이 나갔습니다 ──/)
       await expect(systemMsg).toBeVisible({ timeout: 20000 })
-      console.log('  시스템 메시지 확인 성공')
+      // 시스템 메시지 확인 완료
     } finally {
       await buyerCtx.close().catch(() => {})
       await sellerCtx.close().catch(() => {})
@@ -193,7 +193,7 @@ test.describe('채팅 - 나가기', () => {
     // 먼저 채팅방 나가기 실행
     const entered = await enterFirstChatRoom(page)
     if (!entered) {
-      console.log('  채팅방 없음 - 스킵')
+      test.skip(true, '채팅방 없음')
       return
     }
 
@@ -245,8 +245,8 @@ test.describe('채팅 - 나가기', () => {
     try {
       body = JSON.parse(text)
     } catch {
-      // JSON 파싱 실패 시에도 에러 응답이므로 통과
-      console.log('  응답이 JSON이 아님 (status:', response.status(), ') - 에러 응답 확인됨')
+      // JSON 파싱 실패 시에도 에러 응답이므로 통과 (비-JSON 에러 응답)
+      expect(response.status()).toBeGreaterThanOrEqual(400)
       return
     }
     // API 응답 형식 검증: success: false + error 객체
