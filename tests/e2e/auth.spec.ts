@@ -45,6 +45,69 @@ test.describe('인증 - 비로그인', () => {
     await page.waitForTimeout(2000)
     await expect(page).toHaveURL(/register/)
   })
+
+  test('H-5. 비밀번호 찾기 페이지 UI', async ({ page }) => {
+    await page.goto('/forgot-password')
+    await expect(page.getByText('비밀번호 찾기')).toBeVisible({ timeout: TIMEOUT })
+    await expect(page.getByText('재설정 링크를 보내드립니다')).toBeVisible()
+    await expect(page.getByPlaceholder('example@email.com')).toBeVisible()
+    await expect(page.getByRole('button', { name: '재설정 링크 발송' })).toBeVisible()
+    await expect(page.getByText('로그인으로 돌아가기')).toBeVisible()
+  })
+
+  test('H-6. 비밀번호 찾기 - 잘못된 이메일 유효성 검증', async ({ page }) => {
+    await page.goto('/forgot-password')
+    // 빈 이메일로 제출
+    await page.click('button[type="submit"]')
+    await page.waitForTimeout(1000)
+    await expect(page).toHaveURL(/forgot-password/)
+
+    // 잘못된 이메일 형식
+    await page.fill('input[type="email"]', 'invalid-email')
+    await page.click('button[type="submit"]')
+    await page.waitForTimeout(1000)
+    await expect(page.getByText(/올바른 이메일/)).toBeVisible({ timeout: 5000 })
+  })
+
+  test('H-7. 회원가입 - 비밀번호 불일치 검증', async ({ page }) => {
+    await page.goto('/register')
+    await page.fill('input[type="email"]', 'test-h7@example.com')
+    await page.fill('input[placeholder*="닉네임"]', '테스트유저')
+    const passwordInputs = page.locator('input[type="password"]')
+    await passwordInputs.nth(0).fill('Test1234!')
+    await passwordInputs.nth(1).fill('Different1234!')
+    await page.click('button[type="submit"]')
+    await page.waitForTimeout(2000)
+    await expect(page.getByText(/일치하지 않/)).toBeVisible({ timeout: 5000 })
+    await expect(page).toHaveURL(/register/)
+  })
+
+  test('H-8. 회원가입 - 약한 비밀번호 검증', async ({ page }) => {
+    await page.goto('/register')
+    await page.fill('input[type="email"]', 'test-h8@example.com')
+    await page.fill('input[placeholder*="닉네임"]', '테스트유저')
+    const passwordInputs = page.locator('input[type="password"]')
+    // 8자 미만
+    await passwordInputs.nth(0).fill('abc')
+    await passwordInputs.nth(1).fill('abc')
+    await page.click('button[type="submit"]')
+    await page.waitForTimeout(2000)
+    await expect(page.getByText(/8자 이상/)).toBeVisible({ timeout: 5000 })
+    await expect(page).toHaveURL(/register/)
+  })
+
+  test('H-9. 회원가입 - 잘못된 이메일 형식 시 페이지 유지', async ({ page }) => {
+    await page.goto('/register')
+    await page.fill('input[type="email"]', 'not-an-email')
+    await page.fill('input[placeholder*="닉네임"]', '테스트유저')
+    const passwordInputs = page.locator('input[type="password"]')
+    await passwordInputs.nth(0).fill('Test1234!')
+    await passwordInputs.nth(1).fill('Test1234!')
+    await page.click('button[type="submit"]')
+    await page.waitForTimeout(2000)
+    // 브라우저 네이티브 validation 또는 zod이 제출을 막아 페이지 유지
+    await expect(page).toHaveURL(/register/)
+  })
 })
 
 // ── 로그인 후: 헤더/메뉴/로그아웃 ──

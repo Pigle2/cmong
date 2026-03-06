@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { BUYER, SELLER, TIMEOUT, login } from './helpers'
 
 test.describe('API 엔드포인트', () => {
   test('F-1. GET /api/services - 서비스 목록', async ({ request }) => {
@@ -78,5 +79,68 @@ test.describe('API 엔드포인트', () => {
     expect(priceDesc.ok()).toBeTruthy()
     const orders = await request.get('/api/services?sort=orders')
     expect(orders.ok()).toBeTruthy()
+  })
+})
+
+// ── API 보안 테스트 ──
+
+test.describe('API 보안', () => {
+  test('S-1. 인증 없이 보호 API 호출 시 401', async ({ request }) => {
+    // 찜 목록
+    const favRes = await request.get('/api/favorites')
+    expect(favRes.status()).toBe(401)
+
+    // 알림 목록
+    const notiRes = await request.get('/api/notifications')
+    expect(notiRes.status()).toBe(401)
+  })
+
+  test('S-2. 인증 없이 찜 토글 시 401', async ({ request }) => {
+    const res = await request.post('/api/favorites', {
+      data: { serviceId: 'fake-id' },
+    })
+    expect(res.status()).toBe(401)
+  })
+
+  test('S-3. 인증 없이 채팅방 생성 시 401', async ({ request }) => {
+    const res = await request.post('/api/chat/rooms', {
+      data: { sellerId: 'fake-id', serviceId: 'fake-id' },
+    })
+    expect(res.status()).toBe(401)
+  })
+
+  test('S-4. 잘못된 serviceId로 찜 토글 시 400', async ({ page, request }) => {
+    await login(page, BUYER)
+    // 로그인 후 쿠키를 가진 상태에서 request 사용
+    const res = await page.request.post('/api/favorites', {
+      data: { serviceId: 12345 }, // string이 아닌 number
+    })
+    expect(res.status()).toBe(400)
+  })
+
+  test('S-5. 잘못된 roomType으로 채팅방 생성 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/chat/rooms', {
+      data: { sellerId: 'fake-id', serviceId: 'fake-id', roomType: 'INVALID' },
+    })
+    expect(res.status()).toBe(400)
+  })
+
+  test('S-6. 페이지네이션 limit 최대 100 제한', async ({ request }) => {
+    const res = await request.get('/api/services?limit=999')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    // 데이터가 100개를 초과하면 안 됨
+    expect(body.data.length).toBeLessThanOrEqual(100)
+  })
+
+  test('S-7. 존재하지 않는 서비스 ID 404', async ({ request }) => {
+    const res = await request.get('/api/services/00000000-0000-0000-0000-000000000000')
+    expect(res.status()).toBe(404)
+  })
+
+  test('S-8. 리뷰 API - serviceId 없이 호출 시 400', async ({ request }) => {
+    const res = await request.get('/api/reviews')
+    expect(res.status()).toBe(400)
   })
 })

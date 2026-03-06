@@ -225,6 +225,84 @@ test.describe('서비스 - 검색 필터', () => {
     }
   })
 
+  test('N-9. 서비스 등록 전체 플로우 - 폼 제출까지', async ({ page }) => {
+    await login(page, SELLER)
+    await page.goto('/seller/services/new')
+    await page.waitForTimeout(3000)
+
+    // 카테고리 선택 (shadcn Select - role="combobox" 클릭 → option 선택)
+    const catTrigger = page.locator('[role="combobox"]').first()
+    await expect(catTrigger).toBeVisible({ timeout: TIMEOUT })
+    await catTrigger.click()
+    await page.waitForTimeout(1000)
+    const catOption = page.locator('[role="option"]').first()
+    if (await catOption.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await catOption.click()
+      await page.waitForTimeout(1000)
+    }
+
+    // 제목 입력
+    const titleInput = page.getByPlaceholder(/제목/)
+    await titleInput.fill(`E2E 등록 테스트 서비스 ${Date.now()}`)
+
+    // 설명 입력
+    const descTextarea = page.getByPlaceholder(/설명/).first()
+    await descTextarea.fill('E2E 테스트로 등록된 서비스 설명입니다. 고품질 디자인 서비스를 제공합니다.')
+
+    // 스탠다드 패키지: 가격 + 작업일
+    const priceInput = page.locator('input[type="number"]').first()
+    if (await priceInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await priceInput.fill('50000')
+    }
+    // 작업일 (두 번째 number input)
+    const daysInput = page.locator('input[type="number"]').nth(1)
+    if (await daysInput.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await daysInput.fill('5')
+    }
+
+    // 서비스 등록 버튼 클릭
+    const submitBtn = page.getByRole('button', { name: '서비스 등록' })
+    if (await submitBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await submitBtn.click()
+      await page.waitForTimeout(5000)
+      const redirected = page.url().includes('/seller/services') && !page.url().includes('/new')
+      const hasToast = await page.getByText(/등록|성공/).isVisible({ timeout: 5000 }).catch(() => false)
+      expect(redirected || hasToast).toBeTruthy()
+    }
+  })
+
+  test('N-10. 서비스 편집 페이지 - 기존 데이터 로드 확인', async ({ page }) => {
+    await login(page, SELLER)
+    await page.goto('/seller/services')
+    await page.waitForTimeout(3000)
+    const editLink = page.locator('a[href*="/edit"]').first()
+    if (!await editLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('  편집 가능한 서비스 없음 - 스킵')
+      return
+    }
+    await editLink.click()
+    await page.waitForTimeout(3000)
+
+    // 편집 페이지 헤더 확인
+    await expect(page.getByText('서비스 수정')).toBeVisible({ timeout: TIMEOUT })
+
+    // 기존 데이터가 로드되었는지 확인 (서비스 제목 input에 값이 있어야 함)
+    const titleInput = page.locator('input').first()
+    await expect(titleInput).toBeVisible({ timeout: TIMEOUT })
+    const titleValue = await titleInput.inputValue()
+    expect(titleValue.length).toBeGreaterThan(0)
+    console.log(`  편집 중인 서비스: ${titleValue}`)
+
+    // 설명 textarea에도 값이 있어야 함
+    const descTextarea = page.locator('textarea').first()
+    const descValue = await descTextarea.inputValue()
+    expect(descValue.length).toBeGreaterThan(0)
+
+    // 저장 버튼 존재 확인
+    const saveBtn = page.getByRole('button', { name: '저장' })
+    await expect(saveBtn).toBeVisible({ timeout: TIMEOUT })
+  })
+
   test('N-7. 검색어 + 결과 없음 → 안내 메시지', async ({ page }) => {
     await page.goto('/services')
     await page.waitForTimeout(2000)

@@ -162,6 +162,59 @@ test.describe('주문 - 상태 전이', () => {
   })
 })
 
+// ── 거절/취소 ──
+
+test.describe('주문 - 거절/취소', () => {
+  test('E-6. 판매자: 주문 거절 버튼 표시 (PAID 상태)', async ({ page }) => {
+    await login(page, SELLER)
+    await page.goto('/seller/orders')
+    await page.waitForTimeout(3000)
+    const orderLink = page.locator('a[href*="/seller/orders/"]').first()
+    if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('  주문 없음 - 스킵')
+      return
+    }
+    await orderLink.click()
+    await page.waitForTimeout(3000)
+    // PAID 상태에서 거절 버튼 존재 여부 확인
+    const rejectBtn = page.locator('button:has-text("거절")')
+    const acceptBtn = page.locator('button:has-text("수락")')
+    const hasReject = await rejectBtn.isVisible({ timeout: 3000 }).catch(() => false)
+    const hasAccept = await acceptBtn.isVisible({ timeout: 3000 }).catch(() => false)
+    // PAID 상태면 둘 다 있어야 함, 다른 상태면 스킵
+    if (hasAccept) {
+      expect(hasReject).toBeTruthy()
+      console.log('  ✓ PAID 상태에서 거절 버튼 확인')
+    } else {
+      console.log('  PAID 상태 아님 - 거절 버튼 테스트 스킵')
+    }
+  })
+
+  test('E-7. 구매자: 주문 취소 버튼 표시 (PAID/ACCEPTED 상태)', async ({ page }) => {
+    await login(page, BUYER)
+    await page.goto('/orders')
+    await page.waitForTimeout(3000)
+    const orderLink = page.locator('a[href*="/orders/"]').first()
+    if (!await orderLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('  주문 없음 - 스킵')
+      return
+    }
+    await orderLink.click()
+    await page.waitForTimeout(3000)
+    const cancelBtn = page.locator('button:has-text("주문 취소")')
+    const hasCancelBtn = await cancelBtn.isVisible({ timeout: 3000 }).catch(() => false)
+    // PAID 또는 ACCEPTED 상태면 취소 버튼이 있어야 함
+    const statusText = await page.locator('body').textContent()
+    const isPaidOrAccepted = statusText?.includes('결제완료') || statusText?.includes('수락')
+    if (isPaidOrAccepted) {
+      expect(hasCancelBtn).toBeTruthy()
+      console.log('  ✓ PAID/ACCEPTED 상태에서 취소 버튼 확인')
+    } else {
+      console.log(`  취소 가능 상태 아님 - 스킵 (취소 버튼: ${hasCancelBtn})`)
+    }
+  })
+})
+
 // ── 수정 요청 ──
 
 test.describe('주문 - 수정 요청', () => {
