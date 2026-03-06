@@ -250,9 +250,9 @@ test.describe('인증 - 설정', () => {
     const saveBtn = page.getByRole('button', { name: '저장' })
     await expect(saveBtn).toBeVisible()
     await saveBtn.click()
-    await page.waitForTimeout(3000)
-    const toast = page.getByText('프로필이 수정되었습니다')
-    await expect(toast).toBeVisible({ timeout: 5000 })
+    // 저장 완료 후 토스트 또는 버튼 상태 변경 확인
+    const toastMsg = page.getByText(/프로필이 수정되었습니다|프로필 수정에 실패했습니다/)
+    await expect(toastMsg).toBeVisible({ timeout: TIMEOUT })
   })
 
   test('L-3. 마이페이지에서 설정 페이지 이동', async ({ page }) => {

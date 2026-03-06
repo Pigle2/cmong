@@ -71,13 +71,13 @@ test.describe('서비스 - 찜하기', () => {
     await page.waitForURL(/services\//, { timeout: TIMEOUT })
     const favBtn = page.getByRole('button', { name: '찜' })
     await expect(favBtn).toBeVisible({ timeout: 5000 })
-    // 찜 추가
+    // 찜 버튼 클릭 → 하트 아이콘이 fill-red-500으로 변경되는지 확인
     await favBtn.click()
-    // 버튼이 다시 enabled 될 때까지 대기 (loading 해제)
-    await expect(favBtn).toBeEnabled({ timeout: TIMEOUT })
-    // 찜 해제
-    await favBtn.click()
-    await expect(favBtn).toBeEnabled({ timeout: TIMEOUT })
+    await page.waitForTimeout(3000)
+    // 찜 상태 변경 확인 (빨간 하트 또는 토스트 메시지)
+    const heartFilled = await page.locator('button:has-text("찜") svg.fill-red-500, button:has-text("찜") img').first().isVisible({ timeout: 5000 }).catch(() => false)
+    const toastShown = await page.getByText(/찜 목록/).first().isVisible({ timeout: 3000 }).catch(() => false)
+    expect(heartFilled || toastShown).toBeTruthy()
   })
 })
 

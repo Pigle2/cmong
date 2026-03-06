@@ -42,20 +42,23 @@ export default function SettingsPage() {
     if (!user) return
 
     setLoading(true)
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        nickname: form.nickname.trim(),
-        bio: form.bio.trim() || null,
-      })
-      .eq('id', user.id)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          nickname: form.nickname.trim(),
+          bio: form.bio.trim() || null,
+        })
+        .eq('id', user.id)
 
-    if (error) {
-      toast({ title: '프로필 수정에 실패했습니다', variant: 'destructive' })
-    } else {
-      toast({ title: '프로필이 수정되었습니다' })
+      if (error) {
+        toast({ title: '프로필 수정에 실패했습니다', variant: 'destructive' })
+      } else {
+        toast({ title: '프로필이 수정되었습니다' })
+      }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
