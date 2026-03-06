@@ -25,25 +25,25 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 export default async function HomePage() {
   const supabase = await createClient()
 
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('depth', 0)
-    .order('sort_order')
-
-  const { data: popularServices } = await supabase
-    .from('services')
-    .select('*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url)')
-    .eq('status', 'ACTIVE')
-    .order('order_count', { ascending: false })
-    .limit(8)
-
-  const { data: newServices } = await supabase
-    .from('services')
-    .select('*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url)')
-    .eq('status', 'ACTIVE')
-    .order('created_at', { ascending: false })
-    .limit(8)
+  const [{ data: categories }, { data: popularServices }, { data: newServices }] = await Promise.all([
+    supabase
+      .from('categories')
+      .select('*')
+      .eq('depth', 0)
+      .order('sort_order'),
+    supabase
+      .from('services')
+      .select('*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url)')
+      .eq('status', 'ACTIVE')
+      .order('order_count', { ascending: false })
+      .limit(8),
+    supabase
+      .from('services')
+      .select('*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url)')
+      .eq('status', 'ACTIVE')
+      .order('created_at', { ascending: false })
+      .limit(8),
+  ])
 
   return (
     <div>

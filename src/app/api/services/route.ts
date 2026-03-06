@@ -21,13 +21,18 @@ export async function GET(request: NextRequest) {
   }
 
   if (category) {
-    const { data: cat } = await supabase
+    const { data: allCategories } = await supabase
       .from('categories')
-      .select('id')
-      .eq('slug', category)
-      .single()
-    if (cat) {
-      query = query.eq('category_id', cat.id)
+      .select('id, slug, parent_id')
+    if (allCategories) {
+      const cat = allCategories.find((c) => c.slug === category)
+      if (cat) {
+        const children = allCategories.filter((c) => c.parent_id === cat.id)
+        const childIds = children.map((c) => c.id)
+        const grandchildren = allCategories.filter((c) => childIds.includes(c.parent_id))
+        const allIds = [cat.id, ...childIds, ...grandchildren.map((c) => c.id)]
+        query = query.in('category_id', allIds)
+      }
     }
   }
 

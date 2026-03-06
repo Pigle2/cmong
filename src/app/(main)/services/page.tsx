@@ -32,19 +32,18 @@ export default async function ServicesPage({ searchParams }: Props) {
   }
 
   if (category) {
-    const { data: cat } = await supabase
+    const { data: allCategories } = await supabase
       .from('categories')
-      .select('id')
-      .eq('slug', category)
-      .single()
-    if (cat) {
-      // Get subcategory IDs too
-      const { data: subcats } = await supabase
-        .from('categories')
-        .select('id')
-        .or(`id.eq.${cat.id},parent_id.eq.${cat.id}`)
-      const catIds = subcats?.map((c) => c.id) || [cat.id]
-      query = query.in('category_id', catIds)
+      .select('id, slug, parent_id')
+    if (allCategories) {
+      const cat = allCategories.find((c) => c.slug === category)
+      if (cat) {
+        const children = allCategories.filter((c) => c.parent_id === cat.id)
+        const childIds = children.map((c) => c.id)
+        const grandchildren = allCategories.filter((c) => childIds.includes(c.parent_id))
+        const allIds = [cat.id, ...childIds, ...grandchildren.map((c) => c.id)]
+        query = query.in('category_id', allIds)
+      }
     }
   }
 
@@ -71,15 +70,11 @@ export default async function ServicesPage({ searchParams }: Props) {
   const from = (page - 1) * ITEMS_PER_PAGE
   query = query.range(from, from + ITEMS_PER_PAGE - 1)
 
-  const { data: services, count } = await query
+  const [{ data: services, count }, { data: categories }] = await Promise.all([
+    query,
+    supabase.from('categories').select('*').eq('depth', 0).order('sort_order'),
+  ])
   const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE)
-
-  // Get categories for filter
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('depth', 0)
-    .order('sort_order')
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
