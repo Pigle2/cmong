@@ -40,7 +40,7 @@ test.describe('판매자 관리', () => {
     await page.goto('/seller/profile')
     await page.waitForTimeout(3000)
     await expect(page.getByText(/판매자 프로필|프로필 관리/)).toBeVisible({ timeout: TIMEOUT })
-    const nameInput = page.locator('input[name*="name"], input[placeholder*="활동명"]').first()
+    const nameInput = page.getByPlaceholder('표시될 이름')
     await expect(nameInput).toBeVisible({ timeout: 5000 })
   })
 

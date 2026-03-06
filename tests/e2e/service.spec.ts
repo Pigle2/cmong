@@ -69,7 +69,7 @@ test.describe('서비스 - 찜하기', () => {
     await expect(card).toBeVisible({ timeout: TIMEOUT })
     await card.click()
     await page.waitForURL(/services\//, { timeout: TIMEOUT })
-    const favBtn = page.locator('button').filter({ has: page.locator('svg.lucide-heart, svg') }).first()
+    const favBtn = page.getByRole('button', { name: '찜' })
     await expect(favBtn).toBeVisible({ timeout: 5000 })
     await favBtn.click()
     await page.waitForTimeout(2000)
