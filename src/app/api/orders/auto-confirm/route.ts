@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 // 이 엔드포인트는 Vercel Cron 또는 외부 스케줄러에서 호출됩니다.
 // Authorization: Bearer {CRON_SECRET} 헤더로 보호합니다.
@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const supabase = await createClient()
+  // CRON 요청은 유저 세션이 없으므로 admin 클라이언트 사용 (RLS 우회)
+  const supabase = createAdminClient()
 
   // DELIVERED 상태이고 delivered_at으로부터 5일 경과한 주문 조회
   const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()

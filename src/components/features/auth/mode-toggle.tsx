@@ -27,13 +27,13 @@ export function ModeToggle() {
     if (mode === 'BUYER') {
       // 판매자 모드로 전환 시 판매자 프로필 확인
       if (!user) return
-      const { data: sellerProfile } = await supabase
+      const { data: sellerProfile, error } = await supabase
         .from('seller_profiles')
         .select('id')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
-      if (!sellerProfile) {
+      if (error || !sellerProfile) {
         setNoSellerOpen(true)
         return
       }
