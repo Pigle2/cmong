@@ -10,7 +10,7 @@ export async function GET(
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ success: false, error: 'UNAUTHORIZED' }, { status: 401 })
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다' } }, { status: 401 })
   }
 
   // 참여자 검증: 해당 방의 멤버인지 확인
@@ -22,7 +22,7 @@ export async function GET(
     .single()
 
   if (!participant) {
-    return NextResponse.json({ success: false, error: 'FORBIDDEN' }, { status: 403 })
+    return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: '접근 권한이 없습니다' } }, { status: 403 })
   }
 
   const { data: messages } = await supabase
@@ -43,7 +43,7 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ success: false, error: 'UNAUTHORIZED' }, { status: 401 })
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다' } }, { status: 401 })
   }
 
   // 참여자 검증
@@ -55,13 +55,13 @@ export async function POST(
     .single()
 
   if (!participant) {
-    return NextResponse.json({ success: false, error: 'FORBIDDEN' }, { status: 403 })
+    return NextResponse.json({ success: false, error: { code: 'FORBIDDEN', message: '접근 권한이 없습니다' } }, { status: 403 })
   }
 
   const { content } = await request.json()
 
   if (!content || typeof content !== 'string' || content.trim().length === 0 || content.length > 5000) {
-    return NextResponse.json({ success: false, error: 'INVALID_CONTENT' }, { status: 400 })
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '유효하지 않은 메시지입니다' } }, { status: 400 })
   }
 
   const { error } = await supabase.from('chat_messages').insert({
@@ -72,7 +72,7 @@ export async function POST(
   })
 
   if (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    return NextResponse.json({ success: false, error: { code: 'SEND_ERROR', message: error.message } }, { status: 500 })
   }
 
   await supabase

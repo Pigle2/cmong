@@ -64,7 +64,7 @@ export default function EditServiceClient({ service }: { service: ServiceData })
     setLoading(true)
     const supabase = createClient()
 
-    await supabase
+    const { error: serviceError } = await supabase
       .from('services')
       .update({
         title: form.title.trim(),
@@ -73,7 +73,14 @@ export default function EditServiceClient({ service }: { service: ServiceData })
       })
       .eq('id', service.id)
 
+    if (serviceError) {
+      toast({ title: '서비스 수정에 실패했습니다', variant: 'destructive' })
+      setLoading(false)
+      return
+    }
+
     // Update packages
+    let packageError = false
     for (const pkg of form.packages) {
       if (!pkg.price || !pkg.workDays) continue
       const data = {
@@ -86,24 +93,38 @@ export default function EditServiceClient({ service }: { service: ServiceData })
         revision_count: parseInt(pkg.revisionCount) || 0,
       }
       if (pkg.id) {
-        await supabase.from('service_packages').update(data).eq('id', pkg.id)
+        const { error } = await supabase.from('service_packages').update(data).eq('id', pkg.id)
+        if (error) packageError = true
       } else {
-        await supabase.from('service_packages').insert(data)
+        const { error } = await supabase.from('service_packages').insert(data)
+        if (error) packageError = true
       }
+    }
+
+    if (packageError) {
+      toast({ title: '일부 패키지 저장에 실패했습니다', variant: 'destructive' })
     }
 
     // Update tags
-    await supabase.from('service_tags').delete().eq('service_id', service.id)
+    const { error: deleteTagsError } = await supabase.from('service_tags').delete().eq('service_id', service.id)
+    let tagsError = !!deleteTagsError
     if (form.tags.trim()) {
       const tags = form.tags.split(',').map((t) => t.trim()).filter(Boolean)
       if (tags.length > 0) {
-        await supabase.from('service_tags').insert(
+        const { error: insertTagsError } = await supabase.from('service_tags').insert(
           tags.map((tag) => ({ service_id: service.id, tag }))
         )
+        if (insertTagsError) tagsError = true
       }
     }
 
-    toast({ title: '서비스가 수정되었습니다' })
+    if (tagsError) {
+      toast({ title: '태그 저장에 실패했습니다', variant: 'destructive' })
+    }
+
+    if (!packageError && !tagsError) {
+      toast({ title: '서비스가 수정되었습니다' })
+    }
     setLoading(false)
     router.push('/seller/services')
   }

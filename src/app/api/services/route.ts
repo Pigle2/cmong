@@ -40,6 +40,8 @@ export async function GET(request: NextRequest) {
     case 'newest': query = query.order('created_at', { ascending: false }); break
     case 'rating': query = query.order('avg_rating', { ascending: false }); break
     case 'orders': query = query.order('order_count', { ascending: false }); break
+    case 'price_asc':
+    case 'price_desc':
     default: query = query.order('order_count', { ascending: false })
   }
 
@@ -50,6 +52,22 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     return NextResponse.json({ success: false, error: { code: 'QUERY_ERROR', message: error.message } }, { status: 500 })
+  }
+
+  // 가격 정렬: DB에서 가져온 후 패키지 최저가 기준으로 재정렬
+  if (data && (sort === 'price_asc' || sort === 'price_desc')) {
+    const getMinPrice = (service: (typeof data)[number]): number => {
+      const packages = service.packages as { price: number; package_type?: string }[] | null
+      if (!packages || packages.length === 0) return 0
+      const standardPkg = packages.find(p => p.package_type === 'STANDARD')
+      if (standardPkg) return standardPkg.price
+      return Math.min(...packages.map(p => p.price))
+    }
+    data.sort((a, b) =>
+      sort === 'price_asc'
+        ? getMinPrice(a) - getMinPrice(b)
+        : getMinPrice(b) - getMinPrice(a)
+    )
   }
 
   return NextResponse.json({

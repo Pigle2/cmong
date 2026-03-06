@@ -32,39 +32,25 @@ export default function ChatPageClient({ sellerId, serviceId, initialRooms, curr
     if (!sellerId || !serviceId || sellerId === currentUserId || initialized.current) return
     initialized.current = true
 
-    const supabase = createClient()
-
     const createOrFindRoom = async () => {
-      // 기존 방 찾기
-      const existing = rooms.find((r: any) =>
-        r.room_type === 'INQUIRY' &&
-        r.service_id === serviceId &&
-        r.participants?.some((p: any) => p.user_id === sellerId)
-      )
-      if (existing) {
-        setSelectedRoom(existing.id)
-        return
-      }
-
-      // 새 방 생성
-      const roomId = crypto.randomUUID()
-      const { error: roomErr } = await supabase
-        .from('chat_rooms')
-        .insert({ id: roomId, room_type: 'INQUIRY', service_id: serviceId })
-
-      if (!roomErr) {
-        await supabase.from('chat_participants').insert([
-          { room_id: roomId, user_id: currentUserId },
-          { room_id: roomId, user_id: sellerId },
-        ])
-        setSelectedRoom(roomId)
-        // 방 목록 갱신
-        refreshRooms()
+      try {
+        const res = await fetch('/api/chat/rooms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sellerId, serviceId, roomType: 'INQUIRY' }),
+        })
+        const body = await res.json()
+        if (body.success && body.data?.id) {
+          setSelectedRoom(body.data.id)
+          refreshRooms()
+        }
+      } catch (e) {
+        console.error('채팅방 생성/조회 실패:', e)
       }
     }
 
     createOrFindRoom()
-  }, [sellerId, serviceId, currentUserId, rooms])
+  }, [sellerId, serviceId, currentUserId])
 
   const refreshRooms = async () => {
     const supabase = createClient()

@@ -129,6 +129,32 @@ export default function NewServicePage() {
       return
     }
 
+    // Validate packages
+    for (const pkg of form.packages) {
+      const hasPrice = pkg.price !== ''
+      const hasWorkDays = pkg.workDays !== ''
+      if (hasPrice && !hasWorkDays) {
+        toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 가격을 입력하면 작업일도 입력해야 합니다`, variant: 'destructive' })
+        setLoading(false)
+        return
+      }
+      if (!hasPrice && hasWorkDays) {
+        toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 작업일을 입력하면 가격도 입력해야 합니다`, variant: 'destructive' })
+        setLoading(false)
+        return
+      }
+      if (hasPrice && parseInt(pkg.price) <= 0) {
+        toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 가격은 1 이상이어야 합니다`, variant: 'destructive' })
+        setLoading(false)
+        return
+      }
+      if (hasWorkDays && parseInt(pkg.workDays) <= 0) {
+        toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 작업일은 1 이상이어야 합니다`, variant: 'destructive' })
+        setLoading(false)
+        return
+      }
+    }
+
     // Create packages
     const validPackages = form.packages.filter((p) => p.price && p.workDays)
     if (validPackages.length > 0) {
@@ -292,6 +318,7 @@ export default function NewServicePage() {
                       <Label>가격 (원)</Label>
                       <Input
                         type="number"
+                        min="1"
                         value={pkg.price}
                         onChange={(e) => handlePackageChange(idx, 'price', e.target.value)}
                         placeholder="50000"
@@ -301,6 +328,7 @@ export default function NewServicePage() {
                       <Label>작업일 (일)</Label>
                       <Input
                         type="number"
+                        min="1"
                         value={pkg.workDays}
                         onChange={(e) => handlePackageChange(idx, 'workDays', e.target.value)}
                         placeholder="5"

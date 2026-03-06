@@ -22,11 +22,44 @@ export function OrderActions({ order, isBuyer, isSeller, hasReview }: OrderActio
   const [loading, setLoading] = useState(false)
   const [note, setNote] = useState('')
 
+  const VALID_TRANSITIONS: Record<string, string[]> = {
+    PAID: ['ACCEPTED', 'REJECTED', 'CANCELLED'],
+    ACCEPTED: ['IN_PROGRESS', 'CANCELLED'],
+    IN_PROGRESS: ['DELIVERED'],
+    DELIVERED: ['COMPLETED', 'REVISION_REQUESTED'],
+    REVISION_REQUESTED: ['DELIVERED'],
+  }
+
   const updateStatus = async (newStatus: string, actionNote?: string) => {
     setLoading(true)
     const { data: { session } } = await supabase.auth.getSession()
     const user = session?.user
     if (!user) return
+
+    // DB에서 최신 주문 상태를 조회하여 검증
+    const { data: currentOrder, error: fetchError } = await supabase
+      .from('orders')
+      .select('status')
+      .eq('id', order.id)
+      .single()
+
+    if (fetchError || !currentOrder) {
+      toast({ title: '주문 정보를 불러올 수 없습니다', variant: 'destructive' })
+      setLoading(false)
+      return
+    }
+
+    const allowedStatuses = VALID_TRANSITIONS[currentOrder.status] || []
+    if (!allowedStatuses.includes(newStatus)) {
+      toast({
+        title: '상태 변경 불가',
+        description: `현재 상태(${currentOrder.status})에서 ${newStatus}(으)로 변경할 수 없습니다`,
+        variant: 'destructive',
+      })
+      setLoading(false)
+      router.refresh()
+      return
+    }
 
     const { error } = await supabase
       .from('orders')

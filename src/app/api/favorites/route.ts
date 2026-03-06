@@ -44,10 +44,16 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (existing) {
-    await supabase.from('favorites').delete().eq('id', existing.id)
+    const { error: deleteError } = await supabase.from('favorites').delete().eq('id', existing.id)
+    if (deleteError) {
+      return NextResponse.json({ success: false, error: { code: 'DELETE_ERROR', message: deleteError.message } }, { status: 500 })
+    }
     return NextResponse.json({ success: true, data: { favorited: false } })
   }
 
-  await supabase.from('favorites').insert({ user_id: user.id, service_id: serviceId })
+  const { error: insertError } = await supabase.from('favorites').insert({ user_id: user.id, service_id: serviceId })
+  if (insertError) {
+    return NextResponse.json({ success: false, error: { code: 'INSERT_ERROR', message: insertError.message } }, { status: 500 })
+  }
   return NextResponse.json({ success: true, data: { favorited: true } })
 }

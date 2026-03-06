@@ -16,9 +16,6 @@ export default async function ServicesPage({ searchParams }: Props) {
   const category = (searchParams.category as string) || ''
   const sort = (searchParams.sort as string) || 'recommended'
   const page = parseInt((searchParams.page as string) || '1')
-  const minPrice = searchParams.minPrice ? parseInt(searchParams.minPrice as string) : undefined
-  const maxPrice = searchParams.maxPrice ? parseInt(searchParams.maxPrice as string) : undefined
-
   let query = supabase
     .from('services')
     .select(
@@ -58,11 +55,7 @@ export default async function ServicesPage({ searchParams }: Props) {
       query = query.order('order_count', { ascending: false })
       break
     case 'price_asc':
-      query = query.order('created_at', { ascending: false })
-      break
     case 'price_desc':
-      query = query.order('created_at', { ascending: false })
-      break
     default:
       query = query.order('order_count', { ascending: false }).order('avg_rating', { ascending: false })
   }
@@ -70,11 +63,28 @@ export default async function ServicesPage({ searchParams }: Props) {
   const from = (page - 1) * ITEMS_PER_PAGE
   query = query.range(from, from + ITEMS_PER_PAGE - 1)
 
-  const [{ data: services, count }, { data: categories }] = await Promise.all([
+  const [{ data: rawServices, count }, { data: categories }] = await Promise.all([
     query,
     supabase.from('categories').select('*').eq('depth', 0).order('sort_order'),
   ])
   const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE)
+
+  // 가격 정렬: STANDARD 패키지(또는 최저가 패키지)의 price 기준
+  let services = rawServices
+  if (services && (sort === 'price_asc' || sort === 'price_desc')) {
+    const getMinPrice = (service: any) => {
+      const packages = service.packages || []
+      const standardPkg = packages.find((p: any) => p.package_type === 'STANDARD')
+      if (standardPkg) return standardPkg.price ?? Infinity
+      const prices = packages.map((p: any) => p.price).filter((p: any) => p != null)
+      return prices.length > 0 ? Math.min(...prices) : Infinity
+    }
+    services = [...services].sort((a: any, b: any) => {
+      const priceA = getMinPrice(a)
+      const priceB = getMinPrice(b)
+      return sort === 'price_asc' ? priceA - priceB : priceB - priceA
+    })
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">

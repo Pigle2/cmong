@@ -33,10 +33,14 @@ export async function GET(
   const alreadyViewed = request.cookies.get(cookieName)
 
   if (!alreadyViewed) {
-    await supabase
+    const { error: viewError } = await supabase
       .from('services')
       .update({ view_count: (data.view_count || 0) + 1 })
       .eq('id', id)
+
+    if (viewError) {
+      console.error('Failed to update view_count:', viewError.message)
+    }
 
     const response = NextResponse.json({ success: true, data })
     response.cookies.set(cookieName, '1', {

@@ -36,6 +36,19 @@ export default function ReviewPage() {
         router.push(`/orders/${params.id}`)
         return
       }
+
+      // 기존 리뷰 존재 여부 확인
+      const { data: existingReview } = await supabase
+        .from('reviews')
+        .select('id')
+        .eq('order_id', params.id)
+        .single()
+      if (existingReview) {
+        toast({ title: '이미 리뷰를 작성하셨습니다' })
+        router.push('/orders')
+        return
+      }
+
       setOrder(data)
     }
     load()

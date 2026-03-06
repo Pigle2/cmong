@@ -42,7 +42,7 @@ export default function SettingsPage() {
     if (!user) return
 
     setLoading(true)
-    await supabase
+    const { error } = await supabase
       .from('profiles')
       .update({
         nickname: form.nickname.trim(),
@@ -50,7 +50,11 @@ export default function SettingsPage() {
       })
       .eq('id', user.id)
 
-    toast({ title: '프로필이 수정되었습니다' })
+    if (error) {
+      toast({ title: '프로필 수정에 실패했습니다', variant: 'destructive' })
+    } else {
+      toast({ title: '프로필이 수정되었습니다' })
+    }
     setLoading(false)
   }
 

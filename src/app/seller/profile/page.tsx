@@ -54,7 +54,7 @@ export default function SellerProfilePage() {
       .single()
 
     if (existing) {
-      await supabase
+      const { error } = await supabase
         .from('seller_profiles')
         .update({
           display_name: form.displayName.trim(),
@@ -62,13 +62,23 @@ export default function SellerProfilePage() {
           specialties,
         })
         .eq('user_id', user.id)
+      if (error) {
+        toast({ title: '저장에 실패했습니다', variant: 'destructive' })
+        setLoading(false)
+        return
+      }
     } else {
-      await supabase.from('seller_profiles').insert({
+      const { error } = await supabase.from('seller_profiles').insert({
         user_id: user.id,
         display_name: form.displayName.trim(),
         introduction: form.introduction.trim() || null,
         specialties,
       })
+      if (error) {
+        toast({ title: '저장에 실패했습니다', variant: 'destructive' })
+        setLoading(false)
+        return
+      }
     }
 
     toast({ title: '판매자 프로필이 저장되었습니다' })
