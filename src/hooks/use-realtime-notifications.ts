@@ -1,17 +1,19 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useState, useCallback, useRef } from 'react'
+import { createClient, ensureRealtimeAuth } from '@/lib/supabase/client'
 import type { Notification } from '@/types'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export function useRealtimeNotifications(userId: string | undefined) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
-  const supabase = createClient()
+  const supabaseRef = useRef(createClient())
 
   const fetchNotifications = useCallback(async () => {
     if (!userId) return
 
+    const supabase = supabaseRef.current
     const { data } = await supabase
       .from('notifications')
       .select('*')
@@ -28,30 +30,65 @@ export function useRealtimeNotifications(userId: string | undefined) {
 
     if (!userId) return
 
-    const channel = supabase
-      .channel(`notifications:${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          setNotifications((prev) => [payload.new as Notification, ...prev])
-          setUnreadCount((prev) => prev + 1)
+    const supabase = supabaseRef.current
+    let channel: RealtimeChannel | null = null
+    let disposed = false
+
+    const initRealtime = async () => {
+      // Ensure auth token is set before subscribing
+      await ensureRealtimeAuth(supabase)
+
+      if (disposed) return
+
+      channel = supabase
+        .channel(`notifications:${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            const newNotification = payload.new as Notification
+            setNotifications((prev) => {
+              // Prevent duplicates
+              if (prev.some((n) => n.id === newNotification.id)) {
+                return prev
+              }
+              return [newNotification, ...prev]
+            })
+            setUnreadCount((prev) => prev + 1)
+          }
+        )
+        .subscribe()
+    }
+
+    initRealtime()
+
+    // Listen for auth state changes to update Realtime auth token
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (
+          (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') &&
+          session?.access_token
+        ) {
+          await supabase.realtime.setAuth(session.access_token)
         }
-      )
-      .subscribe()
+      }
+    )
 
     return () => {
-      supabase.removeChannel(channel)
+      disposed = true
+      if (channel) supabase.removeChannel(channel)
+      authSubscription.unsubscribe()
     }
   }, [userId, fetchNotifications])
 
   const markAllRead = async () => {
     if (!userId) return
+    const supabase = supabaseRef.current
     await supabase
       .from('notifications')
       .update({ is_read: true })

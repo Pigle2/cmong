@@ -1,24 +1,22 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, ensureRealtimeAuth } from '@/lib/supabase/client'
 import type { ChatMessage } from '@/types'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 export function useRealtimeMessages(roomId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
-  const lastCountRef = useRef(0)
+  const [realtimeConnected, setRealtimeConnected] = useState(false)
+  const supabaseRef = useRef(createClient())
 
   const fetchMessages = useCallback(async () => {
     try {
       const res = await fetch(`/api/chat/rooms/${roomId}/messages`)
       const body = await res.json()
       if (body.success) {
-        // 메시지 수가 변하지 않았으면 상태 업데이트 안 함 (불필요한 리렌더 방지)
-        if (body.data.length !== lastCountRef.current) {
-          setMessages(body.data)
-          lastCountRef.current = body.data.length
-        }
+        setMessages(body.data)
       }
     } catch (e) {
       console.error('fetch messages error:', e)
@@ -28,21 +26,19 @@ export function useRealtimeMessages(roomId: string) {
   }, [roomId])
 
   useEffect(() => {
+    const supabase = supabaseRef.current
+    let channel: RealtimeChannel | null = null
+    let pollInterval: ReturnType<typeof setInterval> | null = null
+    let disposed = false
+
+    // Initial fetch
     fetchMessages()
 
-    const supabase = createClient()
-    let channel: ReturnType<typeof supabase.channel> | null = null
-
-    // Set auth token explicitly for Realtime RLS
     const initRealtime = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.access_token) {
-          supabase.realtime.setAuth(session.access_token)
-        }
-      } catch {
-        // Continue even if getSession fails
-      }
+      // Ensure auth token is set before subscribing
+      await ensureRealtimeAuth(supabase)
+
+      if (disposed) return
 
       channel = supabase
         .channel(`messages:${roomId}`)
@@ -54,23 +50,63 @@ export function useRealtimeMessages(roomId: string) {
             table: 'chat_messages',
             filter: `room_id=eq.${roomId}`,
           },
-          () => {
-            fetchMessages()
+          (payload) => {
+            const newMessage = payload.new as ChatMessage
+            setMessages((prev) => {
+              // Prevent duplicate messages (e.g. from own send + realtime)
+              if (prev.some((m) => m.id === newMessage.id)) {
+                return prev
+              }
+              return [...prev, newMessage]
+            })
           }
         )
-        .subscribe()
+        .subscribe((status) => {
+          if (disposed) return
+          if (status === 'SUBSCRIBED') {
+            setRealtimeConnected(true)
+            // Realtime is working: clear fast polling, use slow fallback only
+            if (pollInterval) {
+              clearInterval(pollInterval)
+              pollInterval = null
+            }
+            // Slow fallback poll (60s) for edge cases (missed events, reconnect gaps)
+            pollInterval = setInterval(fetchMessages, 60_000)
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            setRealtimeConnected(false)
+            // Realtime failed: fall back to faster polling
+            if (pollInterval) {
+              clearInterval(pollInterval)
+            }
+            pollInterval = setInterval(fetchMessages, 5_000)
+          }
+        })
     }
+
+    // Start with a moderate poll until realtime connects
+    pollInterval = setInterval(fetchMessages, 10_000)
 
     initRealtime()
 
-    // Polling fallback every 3s for reliability
-    const pollInterval = setInterval(fetchMessages, 3000)
+    // Listen for auth state changes to update Realtime auth token
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (
+          (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') &&
+          session?.access_token
+        ) {
+          await supabase.realtime.setAuth(session.access_token)
+        }
+      }
+    )
 
     return () => {
-      clearInterval(pollInterval)
+      disposed = true
+      if (pollInterval) clearInterval(pollInterval)
       if (channel) supabase.removeChannel(channel)
+      authSubscription.unsubscribe()
     }
   }, [roomId, fetchMessages])
 
-  return { messages, loading, refetch: fetchMessages }
+  return { messages, loading, realtimeConnected, refetch: fetchMessages }
 }
