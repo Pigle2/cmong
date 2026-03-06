@@ -14,8 +14,11 @@ export function useRealtimeMessages(roomId: string) {
       const res = await fetch(`/api/chat/rooms/${roomId}/messages`)
       const body = await res.json()
       if (body.success) {
-        setMessages(body.data)
-        lastCountRef.current = body.data.length
+        // 메시지 수가 변하지 않았으면 상태 업데이트 안 함 (불필요한 리렌더 방지)
+        if (body.data.length !== lastCountRef.current) {
+          setMessages(body.data)
+          lastCountRef.current = body.data.length
+        }
       }
     } catch (e) {
       console.error('fetch messages error:', e)

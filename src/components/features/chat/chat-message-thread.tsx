@@ -21,12 +21,28 @@ export function ChatMessageThread({
 }: ChatMessageThreadProps) {
   const { messages, loading, refetch } = useRealtimeMessages(roomId)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
   const prevCountRef = useRef(0)
+  const isNearBottomRef = useRef(true)
+
+  // 스크롤 위치 추적: 하단 근처인지 확인
+  useEffect(() => {
+    const scrollEl = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]')
+    if (!scrollEl) return
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollEl
+      isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 100
+    }
+    scrollEl.addEventListener('scroll', handleScroll)
+    return () => scrollEl.removeEventListener('scroll', handleScroll)
+  }, [loading])
 
   useEffect(() => {
-    // 새 메시지가 추가됐을 때만 스크롤 (폴링으로 같은 데이터 받으면 무시)
     if (messages.length > prevCountRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      // 첫 로드이거나 하단 근처일 때만 자동 스크롤
+      if (prevCountRef.current === 0 || isNearBottomRef.current) {
+        bottomRef.current?.scrollIntoView({ behavior: prevCountRef.current === 0 ? 'instant' : 'smooth' })
+      }
     }
     prevCountRef.current = messages.length
   }, [messages])
@@ -40,7 +56,7 @@ export function ChatMessageThread({
         <span className="font-medium">대화</span>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         {loading ? (
           <div className="flex items-center justify-center py-10">
             <p className="text-sm text-muted-foreground">메시지 로딩 중...</p>
