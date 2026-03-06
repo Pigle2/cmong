@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/stores/auth-store'
-import { useUser } from '@/hooks/use-user'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,14 +17,14 @@ import { ArrowLeftRight } from 'lucide-react'
 
 export function ModeToggle() {
   const router = useRouter()
-  const { user } = useUser()
   const { mode, setMode } = useAuthStore()
   const [noSellerOpen, setNoSellerOpen] = useState(false)
   const supabase = createClient()
 
   const handleToggle = async () => {
     if (mode === 'BUYER') {
-      // 판매자 모드로 전환 시 판매자 프로필 확인
+      // 직접 getUser() 호출 (WebSocket 의존 제거)
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const { data: sellerProfile, error } = await supabase
         .from('seller_profiles')
