@@ -94,6 +94,70 @@ test.describe('인증 - 로그인 후', () => {
     await page.goto('/mypage')
     await expect(page).toHaveURL(/login/, { timeout: TIMEOUT })
   })
+
+  test('B-12. 로그아웃 후 보호 페이지 접근 차단', async ({ page }) => {
+    await page.goto('/')
+    await page.waitForTimeout(3000)
+    await logout(page)
+
+    // 모든 보호 페이지가 로그인으로 리다이렉트되는지 확인
+    const protectedPages = ['/orders', '/chat', '/mypage', '/seller/dashboard', '/seller/services']
+    for (const path of protectedPages) {
+      await page.goto(path)
+      await expect(page).toHaveURL(/login/, { timeout: TIMEOUT })
+    }
+  })
+
+  test('B-13. 로그아웃 후 헤더에 로그인 버튼 표시', async ({ page }) => {
+    // 로그인 상태에서 아바타 확인
+    await page.goto('/')
+    await page.waitForTimeout(3000)
+    const avatar = page.locator('header [role="img"], header button:has(span.relative)')
+    await expect(avatar.first()).toBeVisible({ timeout: TIMEOUT })
+
+    // 로그아웃
+    await logout(page)
+    await page.goto('/')
+    await page.waitForTimeout(3000)
+
+    // 로그인 버튼 표시 확인
+    const loginLink = page.locator('header').getByText('로그인')
+    await expect(loginLink).toBeVisible({ timeout: TIMEOUT })
+  })
+
+  test('B-14. 로그아웃 후 브라우저 뒤로가기 시 보호 페이지 접근 불가', async ({ page }) => {
+    // 마이페이지 방문
+    await page.goto('/mypage')
+    await expect(page.getByText(/구매자김철수|buyer1/).first()).toBeVisible({ timeout: TIMEOUT })
+
+    // 로그아웃
+    await logout(page)
+    await page.goto('/login')
+    await page.waitForTimeout(2000)
+
+    // 뒤로가기 시도
+    await page.goBack()
+    await page.waitForTimeout(3000)
+
+    // 로그인 페이지로 리다이렉트되거나 보호 콘텐츠 안 보여야 함
+    const isLoginPage = await page.url().includes('/login')
+    const hasProfile = await page.getByText(/구매자김철수/).isVisible({ timeout: 3000 }).catch(() => false)
+    expect(isLoginPage || !hasProfile).toBeTruthy()
+  })
+
+  test('B-15. 로그아웃 후 재로그인 정상 동작', async ({ page }) => {
+    // 로그아웃
+    await page.goto('/')
+    await page.waitForTimeout(3000)
+    await logout(page)
+
+    // 재로그인
+    await login(page, BUYER)
+
+    // 보호 페이지 정상 접근 확인
+    await page.goto('/mypage')
+    await expect(page.getByText(/구매자김철수|buyer1/).first()).toBeVisible({ timeout: TIMEOUT })
+  })
 })
 
 // ── 설정 페이지 ──
