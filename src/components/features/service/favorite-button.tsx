@@ -38,34 +38,35 @@ export function FavoriteButton({ serviceId }: FavoriteButtonProps) {
     }
     setLoading(true)
     const prevFavorite = isFavorite
-    if (isFavorite) {
-      setIsFavorite(false)
-      const { error } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('service_id', serviceId)
-      if (error) {
-        setIsFavorite(prevFavorite)
-        toast({ title: '찜 삭제에 실패했습니다', variant: 'destructive' })
-        setLoading(false)
-        return
+    try {
+      if (isFavorite) {
+        setIsFavorite(false)
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('service_id', serviceId)
+        if (error) {
+          setIsFavorite(prevFavorite)
+          toast({ title: '찜 삭제에 실패했습니다', variant: 'destructive' })
+          return
+        }
+        toast({ title: '찜 목록에서 삭제했습니다' })
+      } else {
+        setIsFavorite(true)
+        const { error } = await supabase
+          .from('favorites')
+          .insert({ user_id: user.id, service_id: serviceId })
+        if (error) {
+          setIsFavorite(prevFavorite)
+          toast({ title: '찜 추가에 실패했습니다', variant: 'destructive' })
+          return
+        }
+        toast({ title: '찜 목록에 추가했습니다' })
       }
-      toast({ title: '찜 목록에서 삭제했습니다' })
-    } else {
-      setIsFavorite(true)
-      const { error } = await supabase
-        .from('favorites')
-        .insert({ user_id: user.id, service_id: serviceId })
-      if (error) {
-        setIsFavorite(prevFavorite)
-        toast({ title: '찜 추가에 실패했습니다', variant: 'destructive' })
-        setLoading(false)
-        return
-      }
-      toast({ title: '찜 목록에 추가했습니다' })
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (

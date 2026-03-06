@@ -71,13 +71,13 @@ test.describe('서비스 - 찜하기', () => {
     await page.waitForURL(/services\//, { timeout: TIMEOUT })
     const favBtn = page.getByRole('button', { name: '찜' })
     await expect(favBtn).toBeVisible({ timeout: 5000 })
+    // 찜 추가
     await favBtn.click()
-    await page.waitForTimeout(2000)
-    // 토글 후 버튼이 여전히 존재하고 클릭 가능해야 함
-    await expect(favBtn).toBeVisible()
+    // 버튼이 다시 enabled 될 때까지 대기 (loading 해제)
+    await expect(favBtn).toBeEnabled({ timeout: TIMEOUT })
+    // 찜 해제
     await favBtn.click()
-    await page.waitForTimeout(1000)
-    await expect(favBtn).toBeVisible()
+    await expect(favBtn).toBeEnabled({ timeout: TIMEOUT })
   })
 })
 
