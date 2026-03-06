@@ -99,7 +99,7 @@ export function ChatMessageThread({
         <span className="flex-1 font-medium">대화</span>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" data-testid="chat-more-menu">
               <MoreVertical className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
