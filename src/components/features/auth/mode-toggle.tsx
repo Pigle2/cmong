@@ -23,8 +23,9 @@ export function ModeToggle() {
 
   const handleToggle = async () => {
     if (mode === 'BUYER') {
-      // 직접 getUser() 호출 (WebSocket 의존 제거)
-      const { data: { user } } = await supabase.auth.getUser()
+      // getSession()으로 쿠키 기반 세션에서 user 가져오기
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user
       if (!user) return
       const { data: sellerProfile, error } = await supabase
         .from('seller_profiles')
