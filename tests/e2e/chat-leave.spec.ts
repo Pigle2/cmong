@@ -176,8 +176,8 @@ test.describe('채팅 - 나가기', () => {
       await confirmBtn.click()
 
       // 판매자 화면에서 시스템 메시지 확인 (최대 20초 대기)
-      // "OOO님이 나갔습니다" 형식의 시스템 메시지
-      const systemMsg = sellerPage.getByText(/님이 나갔습니다/)
+      // 채팅 메시지 영역의 "── OOO님이 나갔습니다 ──" 시스템 메시지
+      const systemMsg = sellerPage.getByText(/── .+님이 나갔습니다 ──/)
       await expect(systemMsg).toBeVisible({ timeout: 20000 })
       console.log('  시스템 메시지 확인 성공')
     } finally {
