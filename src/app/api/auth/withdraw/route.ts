@@ -9,7 +9,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다' } }, { status: 401 })
   }
 
-  const { reason } = await request.json()
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '잘못된 요청입니다' } },
+      { status: 400 }
+    )
+  }
+
+  const { reason } = body
+  if (!reason || typeof reason !== 'string' || reason.trim().length === 0 || reason.length > 500) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '탈퇴 사유를 올바르게 입력해주세요 (최대 500자)' } },
+      { status: 400 }
+    )
+  }
 
   // 진행 중인 주문 확인 (BR-MY-03)
   const { data: activeOrders } = await supabase

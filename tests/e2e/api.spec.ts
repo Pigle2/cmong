@@ -265,4 +265,36 @@ test.describe('API 보안', () => {
     const body = await res.json()
     expect(body.success).toBe(true)
   })
+
+  test('S-19. 회원탈퇴 - 인증 없이 호출 시 401', async ({ request }) => {
+    const res = await request.post('/api/auth/withdraw', {
+      data: { reason: '테스트' },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-20. 회원탈퇴 - reason 미전달 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/auth/withdraw', {
+      data: {},
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-21. 회원탈퇴 - reason 500자 초과 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/auth/withdraw', {
+      data: { reason: 'x'.repeat(501) },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
 })

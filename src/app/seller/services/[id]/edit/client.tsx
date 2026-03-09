@@ -64,12 +64,17 @@ export default function EditServiceClient({ service }: { service: ServiceData })
     setLoading(true)
     const supabase = createClient()
 
+    if (!form.title.trim()) {
+      toast({ title: '제목은 필수입니다', variant: 'destructive' })
+      setLoading(false)
+      return
+    }
+
     const { error: serviceError } = await supabase
       .from('services')
       .update({
         title: form.title.trim(),
         description: form.description.trim(),
-        status: form.status,
       })
       .eq('id', service.id)
 
@@ -83,14 +88,22 @@ export default function EditServiceClient({ service }: { service: ServiceData })
     let packageError = false
     for (const pkg of form.packages) {
       if (!pkg.price || !pkg.workDays) continue
+      const price = parseInt(pkg.price)
+      const workDays = parseInt(pkg.workDays)
+      const revisionCount = parseInt(pkg.revisionCount) || 0
+      if (price <= 0 || workDays <= 0 || revisionCount < 0) {
+        toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 가격과 작업일은 1 이상, 수정 횟수는 0 이상이어야 합니다`, variant: 'destructive' })
+        setLoading(false)
+        return
+      }
       const data = {
         service_id: service.id,
         tier: pkg.tier,
         name: pkg.name,
         description: pkg.description,
-        price: parseInt(pkg.price),
-        work_days: parseInt(pkg.workDays),
-        revision_count: parseInt(pkg.revisionCount) || 0,
+        price,
+        work_days: workDays,
+        revision_count: revisionCount,
       }
       if (pkg.id) {
         const { error } = await supabase.from('service_packages').update(data).eq('id', pkg.id)
