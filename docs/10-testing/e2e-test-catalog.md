@@ -1,7 +1,7 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **127개 단위 테스트** + **99개 시나리오 테스트** = **226개**.
-> 마지막 업데이트: 2026-03-06
+> Playwright 기반 E2E 테스트 카탈로그. 총 **132개 단위 테스트** + **99개 시나리오 테스트** = **231개**.
+> 마지막 업데이트: 2026-03-09
 
 ## 실행 방법
 
@@ -181,7 +181,7 @@ npx playwright test -g "A-1"
 
 ---
 
-### 8. `api.spec.ts` — API 엔드포인트 + 보안 (16개)
+### 8. `api.spec.ts` — API 엔드포인트 + 보안 (21개)
 
 | ID | 테스트 | 로그인 | 설명 |
 |----|--------|:------:|------|
@@ -203,6 +203,11 @@ npx playwright test -g "A-1"
 | S-6 | 페이지네이션 limit 100 제한 | - | limit=999 → 100개 이하 |
 | S-7 | 존재하지 않는 서비스 → 404 | - | UUID 0 |
 | S-8 | 리뷰 serviceId 누락 → 400 | - | GET /api/reviews (파라미터 없이) |
+| S-9 | 인증 없이 리뷰 작성 → 401 | - | POST /api/reviews 미인증 |
+| S-10 | 인증 없이 주문 생성 → 401 | - | POST /api/orders 미인증 |
+| S-11 | 리뷰 작성 - 존재하지 않는 주문 → 404 | BUYER | 악의적 orderId로 리뷰 시도 |
+| S-12 | 주문 생성 - 존재하지 않는 서비스 → 404 | BUYER | 악의적 serviceId로 주문 시도 |
+| S-13 | 주문 생성 - serviceId 미전달 → 400 | BUYER | BAD_REQUEST 검증 |
 
 ---
 
@@ -328,7 +333,7 @@ npx playwright test -g "A-1"
 | 판매자 | seller.spec.ts | 5 | 대시보드/주문/프로필 |
 | 리뷰 | review.spec.ts | 3 | 리뷰작성/답글 |
 | 알림 | notification.spec.ts | 5 | 벨아이콘/API/패널 |
-| API | api.spec.ts | 16 | 엔드포인트 + 보안 |
+| API | api.spec.ts | 21 | 엔드포인트 + 보안 |
 | 에러 | error.spec.ts | 3 | 404/빈 결과 |
 | 모바일 | mobile.spec.ts | 11 | 반응형 + 엣지케이스 |
 | 버그수정 | bugfix-verification.spec.ts | 12 | API/UI 버그 수정 검증 |
