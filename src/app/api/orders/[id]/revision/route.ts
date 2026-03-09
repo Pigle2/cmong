@@ -48,7 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
 
   const now = new Date().toISOString()
-  const { error: updateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from('orders')
     .update({
       status: 'REVISION_REQUESTED',
@@ -56,11 +56,21 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       updated_at: now,
     })
     .eq('id', params.id)
+    .eq('status', 'DELIVERED')
+    .select('id')
 
   if (updateError) {
+    console.error('Order revision error:', updateError.message)
     return NextResponse.json(
-      { success: false, error: { code: 'UPDATE_ERROR', message: updateError.message } },
+      { success: false, error: { code: 'UPDATE_ERROR', message: '수정 요청에 실패했습니다' } },
       { status: 500 }
+    )
+  }
+
+  if (!updated || updated.length === 0) {
+    return NextResponse.json(
+      { success: false, error: { code: 'CONFLICT', message: '주문 상태가 변경되었습니다. 페이지를 새로고침해주세요' } },
+      { status: 409 }
     )
   }
 

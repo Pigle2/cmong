@@ -297,4 +297,47 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('BAD_REQUEST')
   })
+
+  test('S-22. 주문 취소 - 존재하지 않는 주문 404', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders/00000000-0000-0000-0000-000000000000/cancel', {
+      data: { reason: '테스트 취소 사유입니다' },
+    })
+    expect(res.status()).toBe(404)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('NOT_FOUND')
+  })
+
+  test('S-23. 주문 취소 - 에러 메시지에 DB 정보 미노출 확인', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders/invalid-uuid/cancel', {
+      data: { reason: '테스트 취소 사유입니다' },
+    })
+    const body = await res.json()
+    // 에러 메시지에 SQL/DB 관련 정보가 포함되지 않아야 함
+    const msg = JSON.stringify(body)
+    expect(msg).not.toContain('relation')
+    expect(msg).not.toContain('column')
+    expect(msg).not.toContain('permission denied')
+    expect(msg).not.toContain('violates')
+  })
+
+  test('S-24. 구매확정 - 존재하지 않는 주문 404', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders/00000000-0000-0000-0000-000000000000/confirm')
+    expect(res.status()).toBe(404)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+  })
+
+  test('S-25. 수정요청 - 인증 없이 호출 시 401', async ({ request }) => {
+    const res = await request.post('/api/orders/00000000-0000-0000-0000-000000000000/revision', {
+      data: { note: '수정 요청 내용입니다' },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
 })
