@@ -37,7 +37,7 @@ export default function ReviewPage() {
         return
       }
 
-      // 기존 리뷰 존재 여부 확인
+      // 기존 리뷰 존재 여부 확인 (UI 목적 — 실제 중복 방지는 API에서)
       const { data: existingReview } = await supabase
         .from('reviews')
         .select('id')
@@ -60,37 +60,32 @@ export default function ReviewPage() {
       return
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user || !order) return
+    if (!order) return
 
     setLoading(true)
 
-    const { error } = await supabase.from('reviews').insert({
-      order_id: order.id,
-      service_id: order.service_id,
-      reviewer_id: user.id,
-      seller_id: order.seller_id,
-      rating: ratings.overall,
-      quality_rating: ratings.quality,
-      communication_rating: ratings.communication,
-      delivery_rating: ratings.delivery,
-      content: content.trim(),
+    // 리뷰 작성은 API Route를 통해 처리 — 서버에서 주문 소유권/상태 검증
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId: order.id,
+        rating: ratings.overall,
+        qualityRating: ratings.quality,
+        communicationRating: ratings.communication,
+        deliveryRating: ratings.delivery,
+        content: content.trim(),
+      }),
     })
 
-    if (error) {
-      toast({ title: '리뷰 등록에 실패했습니다', variant: 'destructive' })
+    const json = await res.json()
+
+    if (!res.ok || !json.success) {
+      const message = json.error?.message || '리뷰 등록에 실패했습니다'
+      toast({ title: message, variant: 'destructive' })
       setLoading(false)
       return
     }
-
-    // Notify seller
-    await supabase.from('notifications').insert({
-      user_id: order.seller_id,
-      type: 'REVIEW',
-      title: '새 리뷰',
-      message: `${order.service?.title}에 새로운 리뷰가 등록되었습니다`,
-      link: `/services/${order.service_id}`,
-    })
 
     toast({ title: '리뷰가 등록되었습니다' })
     router.push(`/orders/${order.id}`)

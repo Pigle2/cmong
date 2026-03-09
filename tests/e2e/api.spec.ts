@@ -143,4 +143,79 @@ test.describe('API 보안', () => {
     const res = await request.get('/api/reviews')
     expect(res.status()).toBe(400)
   })
+
+  test('S-9. 인증 없이 리뷰 작성 시 401', async ({ request }) => {
+    const res = await request.post('/api/reviews', {
+      data: {
+        orderId: '00000000-0000-0000-0000-000000000000',
+        rating: 5,
+        qualityRating: 5,
+        communicationRating: 5,
+        deliveryRating: 5,
+        content: '테스트 리뷰',
+      },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-10. 인증 없이 주문 생성 시 401', async ({ request }) => {
+    const res = await request.post('/api/orders', {
+      data: {
+        serviceId: '00000000-0000-0000-0000-000000000000',
+        packageId: '00000000-0000-0000-0000-000000000000',
+      },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-11. 리뷰 작성 - 완료되지 않은 주문 거절 400', async ({ page }) => {
+    await login(page, BUYER)
+    // 존재하지 않는 주문 ID로 리뷰 작성 시도
+    const res = await page.request.post('/api/reviews', {
+      data: {
+        orderId: '00000000-0000-0000-0000-000000000000',
+        rating: 5,
+        qualityRating: 5,
+        communicationRating: 5,
+        deliveryRating: 5,
+        content: '악의적 리뷰 시도',
+      },
+    })
+    // 존재하지 않는 주문 → 404
+    expect(res.status()).toBe(404)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('NOT_FOUND')
+  })
+
+  test('S-12. 주문 생성 - 존재하지 않는 서비스 404', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders', {
+      data: {
+        serviceId: '00000000-0000-0000-0000-000000000000',
+        packageId: '00000000-0000-0000-0000-000000000000',
+      },
+    })
+    expect(res.status()).toBe(404)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('NOT_FOUND')
+  })
+
+  test('S-13. 주문 생성 - serviceId 미전달 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders', {
+      data: { packageId: '00000000-0000-0000-0000-000000000000' },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
 })

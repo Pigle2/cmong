@@ -50,50 +50,30 @@ export default function NewOrderClient() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
 
-    if (user.id === service.seller_id) {
-      toast({ title: '본인의 서비스는 주문할 수 없습니다', variant: 'destructive' })
-      return
-    }
-
     setLoading(true)
 
-    const dueDate = new Date()
-    dueDate.setDate(dueDate.getDate() + pkg.work_days)
-
-    const { data: order, error } = await supabase
-      .from('orders')
-      .insert({
-        buyer_id: user.id,
-        seller_id: service.seller_id,
-        service_id: service.id,
-        package_id: pkg.id,
-        status: 'PAID',
+    // 주문 생성은 API Route를 통해 처리 — 서버에서 price/seller_id 검증
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        serviceId: service.id,
+        packageId: pkg.id,
         requirements: requirements.trim() || null,
-        total_amount: pkg.price,
-        due_date: dueDate.toISOString(),
-      })
-      .select()
-      .single()
+      }),
+    })
 
-    if (error || !order) {
-      toast({ title: '주문에 실패했습니다', variant: 'destructive' })
+    const json = await res.json()
+
+    if (!res.ok || !json.success) {
+      const message = json.error?.message || '주문에 실패했습니다'
+      toast({ title: message, variant: 'destructive' })
       setLoading(false)
       return
     }
 
-    await supabase.from('order_status_history').insert({
-      order_id: order.id, from_status: null, to_status: 'PAID',
-      changed_by: user.id, note: '주문이 생성되었습니다',
-    })
-
-    await supabase.from('notifications').insert({
-      user_id: service.seller_id, type: 'ORDER',
-      title: '새 주문', message: `새로운 주문이 접수되었습니다: ${service.title}`,
-      link: `/orders/${order.id}`,
-    })
-
     toast({ title: '주문이 완료되었습니다' })
-    router.push(`/orders/${order.id}`)
+    router.push(`/orders/${json.data.id}`)
   }
 
   if (!service || !pkg) {
