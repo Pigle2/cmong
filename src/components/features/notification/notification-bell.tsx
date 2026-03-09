@@ -10,6 +10,11 @@ import { Separator } from '@/components/ui/separator'
 import { useRealtimeNotifications } from '@/hooks/use-realtime-notifications'
 import { createClient } from '@/lib/supabase/client'
 
+// 안전한 링크인지 검증 (상대경로만 허용, javascript: 등 차단)
+function isSafeLink(link: string): boolean {
+  return link.startsWith('/')
+}
+
 export function NotificationBell() {
   const [userId, setUserId] = useState<string | undefined>(undefined)
   const supabase = createClient()
@@ -61,7 +66,7 @@ export function NotificationBell() {
             <div className="flex flex-col">
               {notifications.map((notification) => (
                 <div key={notification.id}>
-                  {notification.link ? (
+                  {notification.link && isSafeLink(notification.link) ? (
                     <Link
                       href={notification.link}
                       className={`block px-4 py-3 hover:bg-accent transition-colors ${

@@ -352,6 +352,23 @@ test.describe('API 보안', () => {
     expect(body.error.code).toBe('NOT_FOUND')
   })
 
+  test('S-28. 보호 페이지 - 비인증 접근 시 로그인 리다이렉트', async ({ page }) => {
+    // 로그인하지 않은 상태에서 보호된 페이지 접근
+    const protectedPages = [
+      '/orders/new',
+      '/mypage/settings',
+      '/seller/services/new',
+      '/seller/profile',
+    ]
+    for (const path of protectedPages) {
+      const res = await page.request.get(path, { maxRedirects: 0 })
+      // 미들웨어 또는 서버 컴포넌트에서 리다이렉트 (307 or 308)
+      const status = res.status()
+      expect(status === 307 || status === 308 || status === 302 || status === 303,
+        `${path} should redirect, got ${status}`).toBeTruthy()
+    }
+  })
+
   test('S-27. 서비스 상세 조회 - 조회수 증가 확인', async ({ request }) => {
     // 서비스 목록에서 첫 번째 서비스 ID 획득
     const listRes = await request.get('/api/services')
