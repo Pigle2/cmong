@@ -47,6 +47,7 @@ export async function GET(
       maxAge: 60 * 30, // 30 minutes
       httpOnly: true,
       sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
     })
     return response
   }

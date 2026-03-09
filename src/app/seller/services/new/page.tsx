@@ -96,10 +96,7 @@ export default function NewServicePage() {
   }
 
   const handleSubmit = async (status: 'DRAFT' | 'ACTIVE') => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    const user = session?.user
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
     const categoryId = form.leafCategoryId || form.subCategoryId || form.categoryId

@@ -17,7 +17,8 @@ export async function GET() {
     .limit(50)
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'QUERY_ERROR', message: error.message } }, { status: 500 })
+    console.error('notifications query error:', error.message)
+    return NextResponse.json({ success: false, error: { code: 'QUERY_ERROR', message: '알림 조회에 실패했습니다' } }, { status: 500 })
   }
 
   return NextResponse.json({ success: true, data })

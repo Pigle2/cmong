@@ -16,7 +16,8 @@ export async function POST() {
     .eq('is_read', false)
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'UPDATE_ERROR', message: error.message } }, { status: 500 })
+    console.error('notifications read-all error:', error.message)
+    return NextResponse.json({ success: false, error: { code: 'UPDATE_ERROR', message: '알림 업데이트에 실패했습니다' } }, { status: 500 })
   }
 
   return NextResponse.json({ success: true })

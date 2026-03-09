@@ -37,7 +37,10 @@ test.describe('리뷰', () => {
     await login(page, SELLER)
     const servicesRes = await page.request.get('/api/services')
     const servicesBody = await servicesRes.json()
-    const sellerService = servicesBody.data?.find((s: any) => s.seller?.email === SELLER.email)
+    // API 응답에 email 필드 없음 → nickname으로 판매자 서비스 식별
+    const sellerService = servicesBody.data?.find(
+      (s: any) => s.seller?.nickname === '디자인마스터'
+    )
     if (!sellerService) {
       test.skip(true, '판매자 서비스 없음')
       return
@@ -59,12 +62,21 @@ test.describe('리뷰', () => {
   test('J-2. 서비스 상세에서 판매자 답글 표시', async ({ page }) => {
     const servicesRes = await page.request.get('/api/services')
     const servicesBody = await servicesRes.json()
-    const service = servicesBody.data?.[0]
-    if (!service) {
-      test.skip(true, '서비스 없음')
+    // 판매자 답글이 있는 서비스 찾기
+    let targetServiceId: string | null = null
+    for (const svc of servicesBody.data?.slice(0, 10) || []) {
+      const rRes = await page.request.get(`/api/reviews?serviceId=${svc.id}`)
+      const rBody = await rRes.json()
+      if (rBody.data?.some((r: any) => r.seller_reply)) {
+        targetServiceId = svc.id
+        break
+      }
+    }
+    if (!targetServiceId) {
+      test.skip(true, '판매자 답글이 있는 서비스 없음')
       return
     }
-    await page.goto(`/services/${service.id}`)
+    await page.goto(`/services/${targetServiceId}`)
     await page.waitForTimeout(3000)
     const reviewSection = page.getByText('리뷰').first()
     if (!await reviewSection.isVisible({ timeout: 5000 }).catch(() => false)) {

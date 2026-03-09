@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     return NextResponse.json(
-      { success: false, error: { code: 'QUERY_ERROR', message: error.message } },
+      { success: false, error: { code: 'QUERY_ERROR', message: '리뷰 조회에 실패했습니다' } },
       { status: 500 }
     )
   }

@@ -16,7 +16,8 @@ export async function GET() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'QUERY_ERROR', message: error.message } }, { status: 500 })
+    console.error('favorites query error:', error.message)
+    return NextResponse.json({ success: false, error: { code: 'QUERY_ERROR', message: '찜 목록 조회에 실패했습니다' } }, { status: 500 })
   }
 
   return NextResponse.json({ success: true, data })
@@ -46,14 +47,16 @@ export async function POST(request: NextRequest) {
   if (existing) {
     const { error: deleteError } = await supabase.from('favorites').delete().eq('id', existing.id)
     if (deleteError) {
-      return NextResponse.json({ success: false, error: { code: 'DELETE_ERROR', message: deleteError.message } }, { status: 500 })
+      console.error('favorites delete error:', deleteError.message)
+      return NextResponse.json({ success: false, error: { code: 'DELETE_ERROR', message: '찜 해제에 실패했습니다' } }, { status: 500 })
     }
     return NextResponse.json({ success: true, data: { favorited: false } })
   }
 
   const { error: insertError } = await supabase.from('favorites').insert({ user_id: user.id, service_id: serviceId })
   if (insertError) {
-    return NextResponse.json({ success: false, error: { code: 'INSERT_ERROR', message: insertError.message } }, { status: 500 })
+    console.error('favorites insert error:', insertError.message)
+    return NextResponse.json({ success: false, error: { code: 'INSERT_ERROR', message: '찜 추가에 실패했습니다' } }, { status: 500 })
   }
   return NextResponse.json({ success: true, data: { favorited: true } })
 }

@@ -12,7 +12,7 @@ export async function GET() {
 
   if (error) {
     return NextResponse.json(
-      { success: false, error: { code: 'QUERY_ERROR', message: error.message } },
+      { success: false, error: { code: 'QUERY_ERROR', message: '카테고리 조회에 실패했습니다' } },
       { status: 500 }
     )
   }

@@ -58,8 +58,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      const user = session?.user
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const { data: profile } = await supabase
         .from('profiles')
@@ -74,9 +73,11 @@ export default function SettingsPage() {
   }, [])
 
   const handleSave = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user
-    if (!user) return
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      toast({ title: '로그인이 필요합니다', variant: 'destructive' })
+      return
+    }
 
     setLoading(true)
     try {
@@ -114,8 +115,7 @@ export default function SettingsPage() {
 
     setPwLoading(true)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const user = session?.user
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user?.email) return
 
       // 현재 비밀번호 검증
@@ -148,8 +148,7 @@ export default function SettingsPage() {
 
     setWithdrawLoading(true)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const user = session?.user
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
       // 진행 중인 주문 확인 (BR-MY-03)

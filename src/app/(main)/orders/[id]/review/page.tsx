@@ -60,8 +60,7 @@ export default function ReviewPage() {
       return
     }
 
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user || !order) return
 
     setLoading(true)

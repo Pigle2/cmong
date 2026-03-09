@@ -35,8 +35,7 @@ export function SellerOrderActions({ order }: SellerOrderActionsProps) {
   const updateStatus = async (newStatus: string) => {
     setLoading(true)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const user = session?.user
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
       // DB에서 최신 상태 재확인

@@ -37,8 +37,14 @@ export default function ResetPasswordPage() {
       return
     }
 
-    if (password.length < 8) {
-      setError('비밀번호는 8자 이상이어야 합니다')
+    if (password.length < 8 || password.length > 20) {
+      setError('비밀번호는 8~20자여야 합니다')
+      return
+    }
+
+    const pwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/
+    if (!pwRegex.test(password)) {
+      setError('영문, 숫자, 특수문자를 각각 1개 이상 포함해야 합니다')
       return
     }
 

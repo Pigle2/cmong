@@ -102,7 +102,8 @@ export async function POST(
   })
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'SEND_ERROR', message: error.message } }, { status: 500 })
+    console.error('chat message send error:', error.message)
+    return NextResponse.json({ success: false, error: { code: 'SEND_ERROR', message: '메시지 전송에 실패했습니다' } }, { status: 500 })
   }
 
   await admin

@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
     .eq('status', 'ACTIVE')
 
   if (q) {
-    query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`)
+    // PostgREST 필터 인젝션 방지: 구분자 문자 제거
+    const sanitizedQ = q.replace(/[,()]/g, '')
+    if (sanitizedQ) {
+      query = query.or(`title.ilike.%${sanitizedQ}%,description.ilike.%${sanitizedQ}%`)
+    }
   }
 
   if (category) {
@@ -51,7 +55,8 @@ export async function GET(request: NextRequest) {
   const { data, count, error } = await query
 
   if (error) {
-    return NextResponse.json({ success: false, error: { code: 'QUERY_ERROR', message: error.message } }, { status: 500 })
+    console.error('services query error:', error.message)
+    return NextResponse.json({ success: false, error: { code: 'QUERY_ERROR', message: '서비스 조회에 실패했습니다' } }, { status: 500 })
   }
 
   // 가격 정렬: DB에서 가져온 후 패키지 최저가 기준으로 재정렬

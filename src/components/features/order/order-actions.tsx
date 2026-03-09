@@ -30,8 +30,7 @@ export function OrderActions({ order, isBuyer, isSeller, hasReview }: OrderActio
   // 일반 상태 전환 (취소/납품/확인 제외)
   const updateStatus = async (newStatus: string, actionNote?: string) => {
     setLoading(true)
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       setLoading(false)
       return
@@ -130,8 +129,7 @@ export function OrderActions({ order, isBuyer, isSeller, hasReview }: OrderActio
   // 납품 처리 (판매자)
   const handleDeliver = async () => {
     setLoading(true)
-    const { data: { session } } = await supabase.auth.getSession()
-    const user = session?.user
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
     const res = await fetch(`/api/orders/${order.id}/deliver`, {

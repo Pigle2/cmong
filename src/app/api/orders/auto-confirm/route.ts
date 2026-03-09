@@ -6,7 +6,14 @@ import { createAdminClient } from '@/lib/supabase/server'
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret) {
+    console.error('CRON_SECRET 환경변수가 설정되지 않았습니다')
+    return NextResponse.json(
+      { success: false, error: { code: 'SERVER_ERROR', message: '서버 설정 오류입니다' } },
+      { status: 500 }
+    )
+  }
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json(
       { success: false, error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다' } },
       { status: 401 }
@@ -27,8 +34,9 @@ export async function POST(request: NextRequest) {
     .not('delivered_at', 'is', null)
 
   if (fetchError) {
+    console.error('auto-confirm fetch error:', fetchError.message)
     return NextResponse.json(
-      { success: false, error: { code: 'QUERY_ERROR', message: fetchError.message } },
+      { success: false, error: { code: 'QUERY_ERROR', message: '주문 조회에 실패했습니다' } },
       { status: 500 }
     )
   }

@@ -47,8 +47,9 @@ export async function POST(
     .eq('id', params.id)
 
   if (error) {
+    console.error('review reply error:', error.message)
     return NextResponse.json(
-      { success: false, error: { code: 'UPDATE_ERROR', message: error.message } },
+      { success: false, error: { code: 'UPDATE_ERROR', message: '답글 저장에 실패했습니다' } },
       { status: 500 }
     )
   }

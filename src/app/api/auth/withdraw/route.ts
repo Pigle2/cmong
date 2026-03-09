@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 })
+    return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: '인증이 필요합니다' } }, { status: 401 })
   }
 
   const { reason } = await request.json()
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
   if (activeOrders && activeOrders.length > 0) {
     return NextResponse.json(
-      { error: '진행 중인 거래가 있어 탈퇴할 수 없습니다' },
+      { success: false, error: { code: 'ACTIVE_ORDERS', message: '진행 중인 거래가 있어 탈퇴할 수 없습니다' } },
       { status: 400 }
     )
   }
@@ -30,7 +30,8 @@ export async function POST(request: Request) {
   const { error } = await adminClient.auth.admin.deleteUser(user.id)
 
   if (error) {
-    return NextResponse.json({ error: '계정 삭제에 실패했습니다' }, { status: 500 })
+    console.error('withdraw error:', error.message)
+    return NextResponse.json({ success: false, error: { code: 'DELETE_ERROR', message: '계정 삭제에 실패했습니다' } }, { status: 500 })
   }
 
   // 세션 종료

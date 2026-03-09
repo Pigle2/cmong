@@ -46,9 +46,7 @@ export function RegisterForm() {
     })
 
     if (error) {
-      setError(error.message === 'User already registered'
-        ? '이미 가입된 이메일입니다'
-        : '회원가입에 실패했습니다. 다시 시도해주세요.')
+      setError('회원가입에 실패했습니다. 다시 시도해주세요.')
       setLoading(false)
       return
     }
