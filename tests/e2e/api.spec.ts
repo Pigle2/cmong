@@ -218,4 +218,51 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('BAD_REQUEST')
   })
+
+  test('S-14. 인증 없이 주문 상태 변경 시 401', async ({ request }) => {
+    const res = await request.post('/api/orders/00000000-0000-0000-0000-000000000000/status', {
+      data: { status: 'ACCEPTED' },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-15. 주문 상태 변경 - 허용되지 않은 상태값 400', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.post('/api/orders/00000000-0000-0000-0000-000000000000/status', {
+      data: { status: 'COMPLETED' },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-16. 주문 상태 변경 - status 미전달 시 400', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.post('/api/orders/00000000-0000-0000-0000-000000000000/status', {
+      data: {},
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-17. 검색 쿼리 특수문자 필터링 검증', async ({ request }) => {
+    // PostgREST 인젝션 시도 - 특수문자가 필터링되어 정상 응답해야 함
+    const res = await request.get('/api/services?q=test;OR(1,eq,1)')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.success).toBe(true)
+  })
+
+  test('S-18. 잘못된 sort 파라미터 무시 검증', async ({ request }) => {
+    const res = await request.get('/api/services?sort=malicious_value')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.success).toBe(true)
+  })
 })

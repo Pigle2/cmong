@@ -7,7 +7,9 @@ export async function GET(request: NextRequest) {
 
   const q = (searchParams.get('q') || '').slice(0, 100)
   const category = searchParams.get('category') || ''
-  const sort = searchParams.get('sort') || 'recommended'
+  const ALLOWED_SORTS = ['recommended', 'newest', 'rating', 'orders', 'price_asc', 'price_desc']
+  const sortParam = searchParams.get('sort') || 'recommended'
+  const sort = ALLOWED_SORTS.includes(sortParam) ? sortParam : 'recommended'
   const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1)
   const limit = Math.min(Math.max(1, parseInt(searchParams.get('limit') || '20') || 20), 100)
 
@@ -17,8 +19,8 @@ export async function GET(request: NextRequest) {
     .eq('status', 'ACTIVE')
 
   if (q) {
-    // PostgREST 필터 인젝션 방지: 구분자 문자 제거
-    const sanitizedQ = q.replace(/[,()]/g, '')
+    // PostgREST 필터 인젝션 방지: 영문, 한글, 숫자, 공백만 허용
+    const sanitizedQ = q.replace(/[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ\s]/g, '').trim()
     if (sanitizedQ) {
       query = query.or(`title.ilike.%${sanitizedQ}%,description.ilike.%${sanitizedQ}%`)
     }

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,65 +27,32 @@ const ACTION_LABELS: Record<string, { label: string; variant: 'default' | 'outli
 
 export function SellerOrderActions({ order }: SellerOrderActionsProps) {
   const router = useRouter()
-  const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [note, setNote] = useState('')
 
   const updateStatus = async (newStatus: string) => {
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      // DELIVERED는 전용 API Route 사용
+      const endpoint = newStatus === 'DELIVERED'
+        ? `/api/orders/${order.id}/deliver`
+        : `/api/orders/${order.id}/status`
 
-      // DB에서 최신 상태 재확인
-      const { data: currentOrder, error: fetchError } = await supabase
-        .from('orders')
-        .select('status')
-        .eq('id', order.id)
-        .single()
+      const body = newStatus === 'DELIVERED'
+        ? { note: note || null }
+        : { status: newStatus, note: note || null }
 
-      if (fetchError || !currentOrder) {
-        toast({ title: '주문 정보를 불러올 수 없습니다', variant: 'destructive' })
-        return
-      }
-
-      const allowed = VALID_TRANSITIONS[currentOrder.status] || []
-      if (!allowed.includes(newStatus)) {
-        toast({
-          title: '상태 변경 불가',
-          description: `현재 상태에서 변경할 수 없습니다`,
-          variant: 'destructive',
-        })
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const json = await res.json()
+      if (!json.success) {
+        toast({ title: json.error?.message || '상태 변경에 실패했습니다', variant: 'destructive' })
         router.refresh()
         return
       }
-
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus })
-        .eq('id', order.id)
-
-      if (error) {
-        toast({ title: '상태 변경에 실패했습니다', variant: 'destructive' })
-        return
-      }
-
-      await supabase.from('order_status_history').insert({
-        order_id: order.id,
-        from_status: currentOrder.status,
-        to_status: newStatus,
-        changed_by: user.id,
-        note: note || null,
-      })
-
-      await supabase.from('notifications').insert({
-        user_id: order.buyer_id,
-        type: 'ORDER',
-        title: '주문 상태 변경',
-        message: `주문 ${order.order_number}의 상태가 변경되었습니다`,
-        link: `/orders/${order.id}`,
-      })
-
       toast({ title: '상태가 변경되었습니다' })
       setNote('')
       router.refresh()
