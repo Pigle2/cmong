@@ -33,10 +33,9 @@ export async function GET(
   const alreadyViewed = request.cookies.get(cookieName)
 
   if (!alreadyViewed) {
+    // 원자적 증가로 레이스컨디션 방지 (동시 요청 시 카운트 누락 없음)
     const { error: viewError } = await supabase
-      .from('services')
-      .update({ view_count: (data.view_count || 0) + 1 })
-      .eq('id', id)
+      .rpc('increment_view_count', { service_id: id })
 
     if (viewError) {
       console.error('Failed to update view_count:', viewError.message)

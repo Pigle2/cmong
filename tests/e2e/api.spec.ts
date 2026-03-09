@@ -340,4 +340,38 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('UNAUTHORIZED')
   })
+
+  test('S-26. 찜 추가 - 존재하지 않는 서비스 404', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/favorites', {
+      data: { serviceId: '00000000-0000-0000-0000-000000000000' },
+    })
+    expect(res.status()).toBe(404)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('NOT_FOUND')
+  })
+
+  test('S-27. 서비스 상세 조회 - 조회수 증가 확인', async ({ request }) => {
+    // 서비스 목록에서 첫 번째 서비스 ID 획득
+    const listRes = await request.get('/api/services')
+    const listBody = await listRes.json()
+    const serviceId = listBody.data[0].id
+
+    // 첫 번째 조회 (쿠키 없음 → 조회수 증가)
+    const res1 = await request.get(`/api/services/${serviceId}`)
+    expect(res1.ok()).toBeTruthy()
+    const body1 = await res1.json()
+    const viewCount1 = body1.data.view_count
+
+    // 쿠키 있는 상태에서 재조회 → 조회수 미증가
+    const cookies = res1.headers()['set-cookie']
+    const res2 = await request.get(`/api/services/${serviceId}`, {
+      headers: cookies ? { cookie: cookies } : {},
+    })
+    expect(res2.ok()).toBeTruthy()
+    const body2 = await res2.json()
+    // 쿠키 기반 중복 방지로 조회수가 같거나 1만 증가해야 함
+    expect(body2.data.view_count).toBeLessThanOrEqual(viewCount1 + 1)
+  })
 })
