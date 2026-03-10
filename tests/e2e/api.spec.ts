@@ -836,4 +836,41 @@ test.describe('API 보안', () => {
     expect(body.data).toBeDefined()
     expect(body.page).toBe(1)
   })
+
+  test('S-70. 서비스 목록 API - 가격 오름차순 정렬 검증', async ({ request }) => {
+    const res = await request.get('/api/services?sort=price_asc')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.success).toBe(true)
+    // 가격 순으로 정렬되어야 함 (STANDARD 패키지 기준)
+    if (body.data.length >= 2) {
+      const getPrice = (s: any) => {
+        const pkgs = s.packages || []
+        const std = pkgs.find((p: any) => p.tier === 'STANDARD')
+        if (std) return std.price
+        return pkgs.length > 0 ? Math.min(...pkgs.map((p: any) => p.price)) : 0
+      }
+      const price0 = getPrice(body.data[0])
+      const price1 = getPrice(body.data[1])
+      expect(price0).toBeLessThanOrEqual(price1)
+    }
+  })
+
+  test('S-71. 서비스 목록 API - 가격 내림차순 정렬 검증', async ({ request }) => {
+    const res = await request.get('/api/services?sort=price_desc')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.success).toBe(true)
+    if (body.data.length >= 2) {
+      const getPrice = (s: any) => {
+        const pkgs = s.packages || []
+        const std = pkgs.find((p: any) => p.tier === 'STANDARD')
+        if (std) return std.price
+        return pkgs.length > 0 ? Math.min(...pkgs.map((p: any) => p.price)) : 0
+      }
+      const price0 = getPrice(body.data[0])
+      const price1 = getPrice(body.data[1])
+      expect(price0).toBeGreaterThanOrEqual(price1)
+    }
+  })
 })

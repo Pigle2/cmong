@@ -78,7 +78,7 @@ export default async function ServicesPage({ searchParams }: Props) {
   if (services && (sort === 'price_asc' || sort === 'price_desc')) {
     const getMinPrice = (service: any) => {
       const packages = service.packages || []
-      const standardPkg = packages.find((p: any) => p.package_type === 'STANDARD')
+      const standardPkg = packages.find((p: any) => p.tier === 'STANDARD')
       if (standardPkg) return standardPkg.price ?? Infinity
       const prices = packages.map((p: any) => p.price).filter((p: any) => p != null)
       return prices.length > 0 ? Math.min(...prices) : Infinity

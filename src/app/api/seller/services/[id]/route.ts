@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 
 const VALID_TIERS = ['STANDARD', 'DELUXE', 'PREMIUM']
 const MAX_TAGS = 20
+const MAX_TAG_LENGTH = 50
+const MAX_PRICE = 100_000_000
+const MAX_WORK_DAYS = 365
 
 export async function PUT(
   request: NextRequest,
@@ -125,8 +128,8 @@ export async function PUT(
   if (packages && Array.isArray(packages)) {
     for (const pkg of packages) {
       if (!VALID_TIERS.includes(pkg.tier)) continue
-      if (typeof pkg.price !== 'number' || pkg.price <= 0) continue
-      if (typeof pkg.workDays !== 'number' || pkg.workDays <= 0) continue
+      if (typeof pkg.price !== 'number' || pkg.price <= 0 || pkg.price > MAX_PRICE) continue
+      if (typeof pkg.workDays !== 'number' || pkg.workDays <= 0 || pkg.workDays > MAX_WORK_DAYS) continue
       const revisionCount = typeof pkg.revisionCount === 'number' ? Math.max(0, pkg.revisionCount) : 0
 
       const data = {
@@ -164,7 +167,7 @@ export async function PUT(
 
   if (tags && Array.isArray(tags) && tags.length > 0) {
     const validTags = tags
-      .filter((t: unknown) => typeof t === 'string' && t.trim().length > 0)
+      .filter((t: unknown) => typeof t === 'string' && t.trim().length > 0 && t.trim().length <= MAX_TAG_LENGTH)
       .slice(0, MAX_TAGS)
     if (validTags.length > 0) {
       const { error: tagInsertError } = await supabase.from('service_tags').insert(

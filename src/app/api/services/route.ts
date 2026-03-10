@@ -64,9 +64,9 @@ export async function GET(request: NextRequest) {
   // 가격 정렬: DB에서 가져온 후 패키지 최저가 기준으로 재정렬
   if (data && (sort === 'price_asc' || sort === 'price_desc')) {
     const getMinPrice = (service: (typeof data)[number]): number => {
-      const packages = service.packages as { price: number; package_type?: string }[] | null
+      const packages = service.packages as { price: number; tier?: string }[] | null
       if (!packages || packages.length === 0) return 0
-      const standardPkg = packages.find(p => p.package_type === 'STANDARD')
+      const standardPkg = packages.find(p => p.tier === 'STANDARD')
       if (standardPkg) return standardPkg.price
       return Math.min(...packages.map(p => p.price))
     }

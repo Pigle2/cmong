@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 
 const VALID_TIERS = ['STANDARD', 'DELUXE', 'PREMIUM']
 const MAX_TAGS = 20
+const MAX_TAG_LENGTH = 50
+const MAX_PRICE = 100_000_000
+const MAX_WORK_DAYS = 365
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -79,15 +82,15 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
-      if (typeof pkg.price !== 'number' || pkg.price <= 0) {
+      if (typeof pkg.price !== 'number' || pkg.price <= 0 || pkg.price > MAX_PRICE) {
         return NextResponse.json(
-          { success: false, error: { code: 'BAD_REQUEST', message: '패키지 가격은 1 이상이어야 합니다' } },
+          { success: false, error: { code: 'BAD_REQUEST', message: `패키지 가격은 1~${MAX_PRICE.toLocaleString()}원이어야 합니다` } },
           { status: 400 }
         )
       }
-      if (typeof pkg.workDays !== 'number' || pkg.workDays <= 0) {
+      if (typeof pkg.workDays !== 'number' || pkg.workDays <= 0 || pkg.workDays > MAX_WORK_DAYS) {
         return NextResponse.json(
-          { success: false, error: { code: 'BAD_REQUEST', message: '작업일은 1 이상이어야 합니다' } },
+          { success: false, error: { code: 'BAD_REQUEST', message: `작업일은 1~${MAX_WORK_DAYS}일이어야 합니다` } },
           { status: 400 }
         )
       }
@@ -95,11 +98,19 @@ export async function POST(request: NextRequest) {
   }
 
   // 태그 검증
-  if (tags && Array.isArray(tags) && tags.length > MAX_TAGS) {
-    return NextResponse.json(
-      { success: false, error: { code: 'BAD_REQUEST', message: `태그는 최대 ${MAX_TAGS}개까지 가능합니다` } },
-      { status: 400 }
-    )
+  if (tags && Array.isArray(tags)) {
+    if (tags.length > MAX_TAGS) {
+      return NextResponse.json(
+        { success: false, error: { code: 'BAD_REQUEST', message: `태그는 최대 ${MAX_TAGS}개까지 가능합니다` } },
+        { status: 400 }
+      )
+    }
+    if (tags.some((t: unknown) => typeof t === 'string' && t.trim().length > MAX_TAG_LENGTH)) {
+      return NextResponse.json(
+        { success: false, error: { code: 'BAD_REQUEST', message: `태그는 최대 ${MAX_TAG_LENGTH}자입니다` } },
+        { status: 400 }
+      )
+    }
   }
 
   // 서비스 생성 — seller_id는 서버에서 인증된 user.id 사용 (클라이언트 조작 불가)
