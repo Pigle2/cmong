@@ -66,10 +66,11 @@
 | 23 | `584e142` | 가격 정렬 필드명 버그 수정 + 패키지/태그 입력 상한 검증 |
 | 24 | `67bfb26` | 주문 API 전체 UUID 형식 검증 통일 (생성/취소/납품/수정요청/확정/상태변경) |
 | 25 | `370957f` | 서비스 상세 DELETED 차단 + 리뷰 API UUID 검증 통일 |
-| 26 | `366eeeb` | 서비스 삭제 시 service_packages 고아 데이터 정리 + markAllRead 클라이언트 DB 직접 호출 제거 |
+| 26 | `7c7be3b` | 서비스 삭제 시 service_packages 고아 데이터 정리 + markAllRead 클라이언트 DB 직접 호출 제거 |
+| 27 | `5f361db` | 회원 탈퇴 클라이언트 직접 orders 조회 제거 + 찜 토글 TOCTOU 레이스컨디션 수정 |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
 - 주문 상태 전이 엣지케이스 (동시 취소/납품 등)
 - Admin Client(Service Role) 불필요한 사용 — Chat API에서 일반 클라이언트로 전환 검토
 - CSP 정책 `unsafe-inline`/`unsafe-eval` 강화
-- 클라이언트 직접 Supabase 호출 잔존 (mypage/settings, orders/new, chat)
+- 클라이언트 직접 Supabase 호출 잔존 (orders/new, chat)

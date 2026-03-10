@@ -942,4 +942,30 @@ test.describe('API 보안', () => {
     const res = await request.delete('/api/seller/services/00000000-0000-0000-0000-000000000000')
     expect(res.status()).not.toBe(500)
   })
+
+  test('S-81. 회원 탈퇴 API 비인증 시 401', async ({ request }) => {
+    // withdraw API가 서버 사이드에서 active orders 체크 수행
+    const res = await request.post('/api/auth/withdraw', {
+      data: { reason: '테스트' },
+    })
+    expect(res.status()).not.toBe(500)
+    expect([401, 403]).toContain(res.status())
+  })
+
+  test('S-82. 찜 토글 API 비인증 시 401', async ({ request }) => {
+    const res = await request.post('/api/favorites', {
+      data: { serviceId: '00000000-0000-0000-0000-000000000000' },
+    })
+    expect(res.status()).not.toBe(500)
+    expect([401, 403]).toContain(res.status())
+  })
+
+  test('S-83. 찜 토글 API 잘못된 serviceId 시 에러', async ({ request }) => {
+    // 비인증 상태에서 잘못된 serviceId로 요청 → 401
+    const res = await request.post('/api/favorites', {
+      data: { serviceId: 'not-a-uuid' },
+    })
+    expect(res.status()).not.toBe(500)
+    expect([400, 401, 403]).toContain(res.status())
+  })
 })

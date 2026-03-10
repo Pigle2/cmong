@@ -58,24 +58,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: { code: 'NOT_ALLOWED', message: '활성 상태의 서비스만 찜할 수 있습니다' } }, { status: 400 })
   }
 
-  const { data: existing } = await supabase
+  // 원자적 토글: DELETE 시도 후, 삭제된 행이 없으면 INSERT (TOCTOU 방지)
+  const { data: deleted } = await supabase
     .from('favorites')
-    .select('id')
+    .delete()
     .eq('user_id', user.id)
     .eq('service_id', serviceId)
-    .single()
+    .select('id')
 
-  if (existing) {
-    const { error: deleteError } = await supabase.from('favorites').delete().eq('id', existing.id)
-    if (deleteError) {
-      console.error('favorites delete error:', deleteError.message)
-      return NextResponse.json({ success: false, error: { code: 'DELETE_ERROR', message: '찜 해제에 실패했습니다' } }, { status: 500 })
-    }
+  if (deleted && deleted.length > 0) {
     return NextResponse.json({ success: true, data: { favorited: false } })
   }
 
+  // 삭제된 행 없음 → 찜 추가
   const { error: insertError } = await supabase.from('favorites').insert({ user_id: user.id, service_id: serviceId })
   if (insertError) {
+    // 동시 요청으로 인한 unique 제약 위반 시 이미 찜된 상태
+    if (insertError.code === '23505') {
+      return NextResponse.json({ success: true, data: { favorited: true } })
+    }
     console.error('favorites insert error:', insertError.message)
     return NextResponse.json({ success: false, error: { code: 'INSERT_ERROR', message: '찜 추가에 실패했습니다' } }, { status: 500 })
   }

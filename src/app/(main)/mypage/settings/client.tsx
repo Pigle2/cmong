@@ -150,27 +150,7 @@ export default function SettingsClient() {
 
     setWithdrawLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      // 진행 중인 주문 확인 (BR-MY-03)
-      const { data: activeOrders } = await supabase
-        .from('orders')
-        .select('id')
-        .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
-        .in('status', ['PAID', 'ACCEPTED', 'IN_PROGRESS', 'DELIVERED', 'REVISION_REQUESTED'])
-
-      if (activeOrders && activeOrders.length > 0) {
-        toast({
-          title: '탈퇴 불가',
-          description: '진행 중인 거래가 있어 탈퇴할 수 없습니다. 모든 거래 완료 후 탈퇴해 주세요.',
-          variant: 'destructive',
-        })
-        setWithdrawOpen(false)
-        return
-      }
-
-      // API를 통해 계정 삭제 (서버 사이드에서 admin 권한으로 처리)
+      // 서버 API에서 진행 중 주문 검증 + 계정 삭제를 모두 처리
       const res = await fetch('/api/auth/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -179,11 +159,15 @@ export default function SettingsClient() {
 
       if (!res.ok) {
         const json = await res.json().catch(() => ({}))
+        const errorMessage = json?.error?.code === 'ACTIVE_ORDERS'
+          ? '진행 중인 거래가 있어 탈퇴할 수 없습니다. 모든 거래 완료 후 탈퇴해 주세요.'
+          : json?.error?.message || '잠시 후 다시 시도해주세요'
         toast({
-          title: '회원 탈퇴에 실패했습니다',
-          description: json.error || '잠시 후 다시 시도해주세요',
+          title: json?.error?.code === 'ACTIVE_ORDERS' ? '탈퇴 불가' : '회원 탈퇴에 실패했습니다',
+          description: errorMessage,
           variant: 'destructive',
         })
+        setWithdrawOpen(false)
         return
       }
 
