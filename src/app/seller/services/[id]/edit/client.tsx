@@ -144,10 +144,18 @@ export default function EditServiceClient({ service }: { service: ServiceData })
 
   const handleDelete = async () => {
     if (!confirm('정말 삭제하시겠습니까?')) return
-    const supabase = createClient()
-    await supabase.from('services').update({ status: 'DELETED' }).eq('id', service.id)
-    toast({ title: '서비스가 삭제되었습니다' })
-    router.push('/seller/services')
+    try {
+      const res = await fetch(`/api/seller/services/${service.id}`, { method: 'DELETE' })
+      const body = await res.json()
+      if (!res.ok || !body.success) {
+        toast({ title: body?.error?.message || '서비스 삭제에 실패했습니다', variant: 'destructive' })
+        return
+      }
+      toast({ title: '서비스가 삭제되었습니다' })
+      router.push('/seller/services')
+    } catch {
+      toast({ title: '서비스 삭제에 실패했습니다', variant: 'destructive' })
+    }
   }
 
   return (

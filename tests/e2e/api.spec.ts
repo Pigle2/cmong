@@ -508,4 +508,50 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('BAD_REQUEST')
   })
+
+  test('S-39. 판매자 프로필 저장 - 인증 없이 호출 시 401', async ({ request }) => {
+    const res = await request.fetch('/api/seller/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ displayName: '테스트' }),
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-40. 판매자 프로필 저장 - 활동명 누락 시 400', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.fetch('/api/seller/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ displayName: '' }),
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-41. 서비스 삭제 - 인증 없이 호출 시 401', async ({ request }) => {
+    const res = await request.fetch('/api/seller/services/00000000-0000-0000-0000-000000000000', {
+      method: 'DELETE',
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-42. 서비스 삭제 - 존재하지 않는 서비스 404', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.fetch('/api/seller/services/00000000-0000-0000-0000-000000000000', {
+      method: 'DELETE',
+    })
+    expect(res.status()).toBe(404)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('NOT_FOUND')
+  })
 })

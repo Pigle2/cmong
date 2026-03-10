@@ -39,48 +39,35 @@ export default function SellerProfileClient() {
   }, [])
 
   const handleSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
-    setLoading(true)
-    const specialties = form.specialties.split(',').map((s) => s.trim()).filter(Boolean)
-
-    const { data: existing } = await supabase
-      .from('seller_profiles')
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (existing) {
-      const { error } = await supabase
-        .from('seller_profiles')
-        .update({
-          display_name: form.displayName.trim(),
-          introduction: form.introduction.trim() || null,
-          specialties,
-        })
-        .eq('user_id', user.id)
-      if (error) {
-        toast({ title: '저장에 실패했습니다', variant: 'destructive' })
-        setLoading(false)
-        return
-      }
-    } else {
-      const { error } = await supabase.from('seller_profiles').insert({
-        user_id: user.id,
-        display_name: form.displayName.trim(),
-        introduction: form.introduction.trim() || null,
-        specialties,
-      })
-      if (error) {
-        toast({ title: '저장에 실패했습니다', variant: 'destructive' })
-        setLoading(false)
-        return
-      }
+    if (!form.displayName.trim()) {
+      toast({ title: '활동명을 입력해주세요', variant: 'destructive' })
+      return
     }
 
-    toast({ title: '판매자 프로필이 저장되었습니다' })
-    setLoading(false)
+    setLoading(true)
+    try {
+      const specialties = form.specialties.split(',').map((s) => s.trim()).filter(Boolean)
+
+      const res = await fetch('/api/seller/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          displayName: form.displayName.trim(),
+          introduction: form.introduction.trim() || null,
+          specialties,
+        }),
+      })
+      const body = await res.json()
+      if (!res.ok || !body.success) {
+        toast({ title: body?.error?.message || '저장에 실패했습니다', variant: 'destructive' })
+      } else {
+        toast({ title: '판매자 프로필이 저장되었습니다' })
+      }
+    } catch {
+      toast({ title: '저장에 실패했습니다', variant: 'destructive' })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
