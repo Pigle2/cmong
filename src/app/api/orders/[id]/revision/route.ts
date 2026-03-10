@@ -21,9 +21,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     )
   }
   const { note } = body
-  if (!note || note.trim().length < 5) {
+  if (!note || typeof note !== 'string' || note.trim().length < 5 || note.length > 2000) {
     return NextResponse.json(
-      { success: false, error: { code: 'BAD_REQUEST', message: '수정 요청 내용을 5자 이상 입력해주세요' } },
+      { success: false, error: { code: 'BAD_REQUEST', message: '수정 요청 내용은 5~2000자여야 합니다' } },
       { status: 400 }
     )
   }

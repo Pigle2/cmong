@@ -4,7 +4,7 @@
 
 ## 주요 문서
 - **기획 문서**: `docs/` 디렉토리 (27개)
-- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 275개 (176 단위 + 99 시나리오)
+- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 278개 (179 단위 + 99 시나리오)
 - **구현 계획**: `.claude/plans/rippling-foraging-moore.md`
 
 ## 작업 규칙
@@ -59,6 +59,7 @@
 | 16 | `9faa047` | 채팅 메시지 에러 상태 반영 + 리뷰 답글 중복 방지 |
 | 17 | `aa59bfa` | 서비스 등록 description + 주문 requirements 길이 검증 추가 |
 | 18 | `0591f9c` | 로그인 Open Redirect 방지 + specialties 항목 길이 검증 |
+| 19 | *(pending)* | 주문 API 텍스트 필드 최대 길이 검증 통일 (deliver/cancel/revision) |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
 - 서비스 등록/편집 시 카테고리 변경 검증 미흡

@@ -49,9 +49,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     )
   }
   const { reason } = body
-  if (!reason || reason.trim().length < 5) {
+  if (!reason || typeof reason !== 'string' || reason.trim().length < 5 || reason.length > 1000) {
     return NextResponse.json(
-      { success: false, error: { code: 'BAD_REQUEST', message: '취소 사유를 5자 이상 입력해주세요' } },
+      { success: false, error: { code: 'BAD_REQUEST', message: '취소 사유는 5~1000자여야 합니다' } },
       { status: 400 }
     )
   }

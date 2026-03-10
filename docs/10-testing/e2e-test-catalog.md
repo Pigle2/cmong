@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **176개 단위 테스트** + **99개 시나리오 테스트** = **275개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **179개 단위 테스트** + **99개 시나리오 테스트** = **278개**.
 > 마지막 업데이트: 2026-03-10
 
 ## 실행 방법
@@ -252,6 +252,9 @@ npx playwright test -g "A-1"
 | S-55 | 주문 생성 - requirements 5000자 초과 → 400 | BUYER | 입력 길이 제한 검증 |
 | S-56 | 판매자 프로필 - specialties 항목 50자 초과 → 400 | SELLER | 개별 항목 길이 검증 |
 | S-57 | 로그인 리다이렉트 - Open Redirect 방지 | 없음 | `//evil.com` 차단 확인 |
+| S-58 | 주문 납품 - delivery_note 2000자 초과 → 400 | SELLER | 입력 길이 제한 검증 |
+| S-59 | 주문 취소 - cancel_reason 1000자 초과 → 400 | BUYER | 입력 길이 제한 검증 |
+| S-60 | 주문 수정요청 - revision_note 2000자 초과 → 400 | BUYER | 입력 길이 제한 검증 |
 
 ---
 
@@ -377,7 +380,7 @@ npx playwright test -g "A-1"
 | 판매자 | seller.spec.ts | 5 | 대시보드/주문/프로필 |
 | 리뷰 | review.spec.ts | 3 | 리뷰작성/답글 |
 | 알림 | notification.spec.ts | 5 | 벨아이콘/API/패널 |
-| API | api.spec.ts | 36 | 엔드포인트 + 보안 |
+| API | api.spec.ts | 39 | 엔드포인트 + 보안 |
 | 에러 | error.spec.ts | 3 | 404/빈 결과 |
 | 모바일 | mobile.spec.ts | 11 | 반응형 + 엣지케이스 |
 | 버그수정 | bugfix-verification.spec.ts | 12 | API/UI 버그 수정 검증 |

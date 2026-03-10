@@ -725,4 +725,37 @@ test.describe('API 보안', () => {
     // 페이지가 정상 로드되어야 함 (에러 없이)
     await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: TIMEOUT })
   })
+
+  test('S-58. 주문 납품 - delivery_note 2000자 초과 시 400', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.post('/api/orders/00000000-0000-0000-0000-000000000000/deliver', {
+      data: { note: 'x'.repeat(2001) },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-59. 주문 취소 - cancel_reason 1000자 초과 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders/00000000-0000-0000-0000-000000000000/cancel', {
+      data: { reason: 'x'.repeat(1001) },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-60. 주문 수정요청 - revision_note 2000자 초과 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders/00000000-0000-0000-0000-000000000000/revision', {
+      data: { note: 'x'.repeat(2001) },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
 })

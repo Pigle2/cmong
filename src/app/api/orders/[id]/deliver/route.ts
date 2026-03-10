@@ -22,6 +22,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
   const { note } = body
 
+  if (note && (typeof note !== 'string' || note.length > 2000)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '납품 메시지는 최대 2000자입니다' } },
+      { status: 400 }
+    )
+  }
+
   const { data: order, error: fetchError } = await supabase
     .from('orders')
     .select('id, status, buyer_id, seller_id, order_number')
