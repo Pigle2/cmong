@@ -51,12 +51,12 @@
 | 8 | `eaa57d7` | 10개 API route JSON 파싱 에러 핸들링 + 채팅방 serviceId 검증 |
 | 9 | `7c8c7a5` | 채팅 메시지 전송/방 생성 에러 핸들링 추가 |
 | 10 | `1cde007` | 서비스 등록 API route 분리 + auto-confirm changed_by 수정 |
+| 11 | `5f62e29` | 프로필 수정 API route 분리 + 알림 markAllRead 에러 핸들링 |
+| 12 | `8a46472` | 판매자 프로필 TOCTOU 수정 + 서비스 삭제 API route 분리 |
+| 13 | `dabd8fb` | 서비스 편집 API route 분리 (클라이언트 직접 DB 접근 제거) |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
-- 서비스 편집(`seller/services/[id]/edit/client.tsx`): 클라이언트 직접 DB UPDATE/DELETE → API route 분리 필요
-- 프로필 수정(`mypage/settings/client.tsx`): 클라이언트 직접 DB UPDATE
-- 판매자 프로필(`seller/profile/client.tsx`): upsert TOCTOU 가능성
-- 서비스 삭제 시 패키지/태그 고아 데이터
-- auto-confirm changed_by가 seller_id로 설정 (시스템 액션)
-- 알림 markAllRead() DB 실패 시 UI 불일치
+- 서비스 삭제 시 패키지/태그 고아 데이터 정리
 - 채팅 메시지 전송 시 상대방 자동 재입장 UX 혼동
+- 서비스 등록/편집 시 카테고리 변경 검증 미흡
+- 주문 상태 전이 엣지케이스 (동시 취소/납품 등)
