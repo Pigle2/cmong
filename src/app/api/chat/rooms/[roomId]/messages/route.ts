@@ -73,7 +73,13 @@ export async function POST(
     return NextResponse.json({ success: false, error: { code: 'LEFT_ROOM', message: '나간 채팅방에는 메시지를 보낼 수 없습니다' } }, { status: 403 })
   }
 
-  const { content } = await request.json()
+  let msgBody
+  try {
+    msgBody = await request.json()
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '잘못된 요청입니다' } }, { status: 400 })
+  }
+  const { content } = msgBody
 
   if (!content || typeof content !== 'string' || content.trim().length === 0 || content.length > 5000) {
     return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '유효하지 않은 메시지입니다' } }, { status: 400 })

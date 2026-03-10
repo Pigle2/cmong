@@ -9,7 +9,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다' } }, { status: 401 })
   }
 
-  const { sellerId, serviceId, roomType = 'INQUIRY' } = await request.json()
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '잘못된 요청입니다' } }, { status: 400 })
+  }
+  const { sellerId, serviceId, roomType = 'INQUIRY' } = body
 
   // 입력값 검증
   if (!sellerId || typeof sellerId !== 'string') {
@@ -18,6 +24,10 @@ export async function POST(request: NextRequest) {
 
   if (!['INQUIRY', 'ORDER'].includes(roomType)) {
     return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '잘못된 roomType입니다' } }, { status: 400 })
+  }
+
+  if (serviceId && typeof serviceId !== 'string') {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: 'serviceId는 문자열이어야 합니다' } }, { status: 400 })
   }
 
   if (sellerId === user.id) {

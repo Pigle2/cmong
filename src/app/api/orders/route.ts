@@ -12,7 +12,15 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const body = await request.json()
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '잘못된 요청입니다' } },
+      { status: 400 }
+    )
+  }
   const { serviceId, packageId, requirements } = body
 
   // 입력값 검증

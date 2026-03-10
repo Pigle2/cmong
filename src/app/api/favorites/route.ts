@@ -31,7 +31,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다' } }, { status: 401 })
   }
 
-  const { serviceId } = await request.json()
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '잘못된 요청입니다' } }, { status: 400 })
+  }
+  const { serviceId } = body
 
   if (!serviceId || typeof serviceId !== 'string') {
     return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: 'serviceId가 필요합니다' } }, { status: 400 })

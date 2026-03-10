@@ -15,7 +15,16 @@ export async function POST(
     )
   }
 
-  const { reply } = await request.json()
+  let body
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '잘못된 요청입니다' } },
+      { status: 400 }
+    )
+  }
+  const { reply } = body
 
   if (!reply || typeof reply !== 'string' || reply.trim().length === 0 || reply.length > 2000) {
     return NextResponse.json(

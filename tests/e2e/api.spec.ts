@@ -369,6 +369,34 @@ test.describe('API 보안', () => {
     }
   })
 
+  test('S-29. 잘못된 JSON body 전송 시 400', async ({ request }) => {
+    // 잘못된 JSON을 POST body로 전송하면 500이 아닌 400 응답이어야 함
+    const endpoints = [
+      '/api/favorites',
+      '/api/orders',
+      '/api/reviews',
+    ]
+    for (const endpoint of endpoints) {
+      const res = await request.post(endpoint, {
+        headers: { 'Content-Type': 'application/json' },
+        data: 'not-valid-json{{{',
+      })
+      // 401(미인증) 또는 400(잘못된 JSON) 중 하나여야 하며 500이면 안 됨
+      expect(res.status(), `${endpoint} should not return 500`).not.toBe(500)
+    }
+  })
+
+  test('S-30. 채팅방 생성 - serviceId 타입 검증', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/chat/rooms', {
+      data: { sellerId: '00000000-0000-0000-0000-000000000000', serviceId: 12345, roomType: 'INQUIRY' },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
   test('S-27. 서비스 상세 조회 - 조회수 증가 확인', async ({ request }) => {
     // 서비스 목록에서 첫 번째 서비스 ID 획득
     const listRes = await request.get('/api/services')
