@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -61,85 +60,53 @@ export default function EditServiceClient({ service }: { service: ServiceData })
   }
 
   const handleSave = async () => {
-    setLoading(true)
-    const supabase = createClient()
-
     if (!form.title.trim()) {
       toast({ title: '제목은 필수입니다', variant: 'destructive' })
-      setLoading(false)
       return
     }
 
-    const { error: serviceError } = await supabase
-      .from('services')
-      .update({
-        title: form.title.trim(),
-        description: form.description.trim(),
+    setLoading(true)
+    try {
+      const packages = form.packages
+        .filter((pkg) => pkg.price && pkg.workDays)
+        .map((pkg) => ({
+          id: pkg.id || undefined,
+          tier: pkg.tier,
+          name: pkg.name,
+          description: pkg.description,
+          price: parseInt(pkg.price),
+          workDays: parseInt(pkg.workDays),
+          revisionCount: parseInt(pkg.revisionCount) || 0,
+        }))
+
+      const tags = form.tags.trim()
+        ? form.tags.split(',').map((t) => t.trim()).filter(Boolean)
+        : []
+
+      const res = await fetch(`/api/seller/services/${service.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: form.title.trim(),
+          description: form.description.trim(),
+          packages,
+          tags,
+        }),
       })
-      .eq('id', service.id)
+      const body = await res.json()
 
-    if (serviceError) {
-      toast({ title: '서비스 수정에 실패했습니다', variant: 'destructive' })
-      setLoading(false)
-      return
-    }
-
-    // Update packages
-    let packageError = false
-    for (const pkg of form.packages) {
-      if (!pkg.price || !pkg.workDays) continue
-      const price = parseInt(pkg.price)
-      const workDays = parseInt(pkg.workDays)
-      const revisionCount = parseInt(pkg.revisionCount) || 0
-      if (price <= 0 || workDays <= 0 || revisionCount < 0) {
-        toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 가격과 작업일은 1 이상, 수정 횟수는 0 이상이어야 합니다`, variant: 'destructive' })
-        setLoading(false)
+      if (!res.ok || !body.success) {
+        toast({ title: body?.error?.message || '서비스 수정에 실패했습니다', variant: 'destructive' })
         return
       }
-      const data = {
-        service_id: service.id,
-        tier: pkg.tier,
-        name: pkg.name,
-        description: pkg.description,
-        price,
-        work_days: workDays,
-        revision_count: revisionCount,
-      }
-      if (pkg.id) {
-        const { error } = await supabase.from('service_packages').update(data).eq('id', pkg.id)
-        if (error) packageError = true
-      } else {
-        const { error } = await supabase.from('service_packages').insert(data)
-        if (error) packageError = true
-      }
-    }
 
-    if (packageError) {
-      toast({ title: '일부 패키지 저장에 실패했습니다', variant: 'destructive' })
-    }
-
-    // Update tags
-    const { error: deleteTagsError } = await supabase.from('service_tags').delete().eq('service_id', service.id)
-    let tagsError = !!deleteTagsError
-    if (form.tags.trim()) {
-      const tags = form.tags.split(',').map((t) => t.trim()).filter(Boolean)
-      if (tags.length > 0) {
-        const { error: insertTagsError } = await supabase.from('service_tags').insert(
-          tags.map((tag) => ({ service_id: service.id, tag }))
-        )
-        if (insertTagsError) tagsError = true
-      }
-    }
-
-    if (tagsError) {
-      toast({ title: '태그 저장에 실패했습니다', variant: 'destructive' })
-    }
-
-    if (!packageError && !tagsError) {
       toast({ title: '서비스가 수정되었습니다' })
+      router.push('/seller/services')
+    } catch {
+      toast({ title: '서비스 수정에 실패했습니다', variant: 'destructive' })
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
-    router.push('/seller/services')
   }
 
   const handleDelete = async () => {

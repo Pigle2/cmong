@@ -554,4 +554,42 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('NOT_FOUND')
   })
+
+  test('S-43. 서비스 수정 PUT - 인증 없이 호출 시 401', async ({ request }) => {
+    const res = await request.fetch('/api/seller/services/00000000-0000-0000-0000-000000000000', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ title: '테스트' }),
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-44. 서비스 수정 PUT - 제목 누락 시 400', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.fetch('/api/seller/services/00000000-0000-0000-0000-000000000000', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ description: '설명만' }),
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-45. 서비스 수정 PUT - 존재하지 않는 서비스 404', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.fetch('/api/seller/services/00000000-0000-0000-0000-000000000000', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ title: '테스트 서비스' }),
+    })
+    expect(res.status()).toBe(404)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('NOT_FOUND')
+  })
 })

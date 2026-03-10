@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **161개 단위 테스트** + **99개 시나리오 테스트** = **260개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **164개 단위 테스트** + **99개 시나리오 테스트** = **263개**.
 > 마지막 업데이트: 2026-03-10
 
 ## 실행 방법
@@ -237,6 +237,9 @@ npx playwright test -g "A-1"
 | S-40 | 판매자 프로필 저장 - 활동명 누락 → 400 | SELLER | BAD_REQUEST 검증 |
 | S-41 | 서비스 삭제 - 인증 없이 → 401 | 없음 | UNAUTHORIZED 검증 |
 | S-42 | 서비스 삭제 - 존재하지 않는 서비스 → 404 | SELLER | NOT_FOUND 검증 |
+| S-43 | 서비스 수정 PUT - 인증 없이 → 401 | 없음 | UNAUTHORIZED 검증 |
+| S-44 | 서비스 수정 PUT - 제목 누락 → 400 | SELLER | BAD_REQUEST 검증 |
+| S-45 | 서비스 수정 PUT - 존재하지 않는 서비스 → 404 | SELLER | NOT_FOUND 검증 |
 
 ---
 
@@ -362,7 +365,7 @@ npx playwright test -g "A-1"
 | 판매자 | seller.spec.ts | 5 | 대시보드/주문/프로필 |
 | 리뷰 | review.spec.ts | 3 | 리뷰작성/답글 |
 | 알림 | notification.spec.ts | 5 | 벨아이콘/API/패널 |
-| API | api.spec.ts | 21 | 엔드포인트 + 보안 |
+| API | api.spec.ts | 24 | 엔드포인트 + 보안 |
 | 에러 | error.spec.ts | 3 | 404/빈 결과 |
 | 모바일 | mobile.spec.ts | 11 | 반응형 + 엣지케이스 |
 | 버그수정 | bugfix-verification.spec.ts | 12 | API/UI 버그 수정 검증 |

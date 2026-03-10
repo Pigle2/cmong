@@ -4,7 +4,7 @@
 
 ## 주요 문서
 - **기획 문서**: `docs/` 디렉토리 (27개)
-- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 250개 (151 단위 + 99 시나리오)
+- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 263개 (164 단위 + 99 시나리오)
 - **구현 계획**: `.claude/plans/rippling-foraging-moore.md`
 
 ## 작업 규칙
@@ -50,7 +50,7 @@
 | 7 | `07d38f1` | useToast 메모리 누수 수정 + 에러 바운더리 추가 |
 | 8 | `eaa57d7` | 10개 API route JSON 파싱 에러 핸들링 + 채팅방 serviceId 검증 |
 | 9 | `7c8c7a5` | 채팅 메시지 전송/방 생성 에러 핸들링 추가 |
-| 10 | (pending) | 서비스 등록 API route 분리 + auto-confirm changed_by 수정 |
+| 10 | `1cde007` | 서비스 등록 API route 분리 + auto-confirm changed_by 수정 |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
 - 서비스 편집(`seller/services/[id]/edit/client.tsx`): 클라이언트 직접 DB UPDATE/DELETE → API route 분리 필요
