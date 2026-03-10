@@ -12,10 +12,14 @@ interface Props {
 
 export default async function ServicesPage({ searchParams }: Props) {
   const supabase = await createClient()
-  const q = (searchParams.q as string) || ''
+  const rawQ = ((searchParams.q as string) || '').slice(0, 100)
+  // PostgREST 필터 인젝션 방지: 영문, 한글, 숫자, 공백만 허용
+  const q = rawQ.replace(/[^a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ\s]/g, '').trim()
   const category = (searchParams.category as string) || ''
-  const sort = (searchParams.sort as string) || 'recommended'
-  const page = parseInt((searchParams.page as string) || '1')
+  const ALLOWED_SORTS = ['recommended', 'newest', 'rating', 'orders', 'price_asc', 'price_desc']
+  const sortParam = (searchParams.sort as string) || 'recommended'
+  const sort = ALLOWED_SORTS.includes(sortParam) ? sortParam : 'recommended'
+  const page = Math.max(1, parseInt((searchParams.page as string) || '1') || 1)
   let query = supabase
     .from('services')
     .select(
@@ -88,7 +92,7 @@ export default async function ServicesPage({ searchParams }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <ServiceSearchBar defaultValue={q} />
+      <ServiceSearchBar defaultValue={rawQ} />
 
       <div className="mt-6 flex flex-col gap-6 md:flex-row">
         <aside className="w-full shrink-0 md:w-56">

@@ -780,4 +780,41 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('BAD_REQUEST')
   })
+
+  test('S-63. 서비스 목록 페이지 - 잘못된 page 파라미터 정상 처리', async ({ page }) => {
+    // NaN이 되는 page 파라미터로 접속해도 에러 없이 정상 렌더링
+    const res = await page.goto('/services?page=abc')
+    expect(res?.status()).toBe(200)
+    // 페이지 내 서비스 목록 영역이 정상 렌더링
+    await expect(page.locator('text=총')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('S-64. 서비스 목록 페이지 - 음수 page 파라미터 정상 처리', async ({ page }) => {
+    const res = await page.goto('/services?page=-5')
+    expect(res?.status()).toBe(200)
+    await expect(page.locator('text=총')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('S-65. 서비스 목록 - 검색어 PostgREST 인젝션 방지 (페이지)', async ({ page }) => {
+    // 서버 컴포넌트의 검색어 sanitize 확인
+    const res = await page.goto('/services?q=test;OR(1,eq,1)')
+    expect(res?.status()).toBe(200)
+    // 에러 페이지가 아닌 정상 서비스 목록 표시
+    await expect(page.locator('text=총')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('S-66. 서비스 목록 - 잘못된 sort 파라미터로 페이지 정상 렌더링', async ({ page }) => {
+    const res = await page.goto('/services?sort=DROP_TABLE')
+    expect(res?.status()).toBe(200)
+    await expect(page.locator('text=총')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('S-67. API - 잘못된 page 파라미터 정상 처리', async ({ request }) => {
+    // API route는 이미 Math.max(1, ...) 처리
+    const res = await request.get('/api/services?page=-999')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.success).toBe(true)
+    expect(body.page).toBe(1) // 음수 → 1로 보정
+  })
 })
