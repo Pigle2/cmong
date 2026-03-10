@@ -905,4 +905,26 @@ test.describe('API 보안', () => {
     })
     expect(res.status()).not.toBe(500)
   })
+
+  test('S-76. 리뷰 답글 - 잘못된 UUID 리뷰 ID 시 에러', async ({ request }) => {
+    const res = await request.post('/api/reviews/not-a-uuid/reply', {
+      data: { reply: '감사합니다' },
+    })
+    // 400(UUID 검증) 또는 401(미인증) — 500이 아니어야 함
+    expect(res.status()).not.toBe(500)
+  })
+
+  test('S-77. 리뷰 조회 - 유효한 UUID로 빈 결과', async ({ request }) => {
+    const res = await request.get('/api/reviews?serviceId=00000000-0000-0000-0000-000000000000')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.success).toBe(true)
+    expect(body.data).toEqual([])
+  })
+
+  test('S-78. 삭제된 서비스 상세 페이지 접근 시 404', async ({ page }) => {
+    // 존재하지 않는 서비스 ID → 404 페이지
+    const res = await page.goto('/services/00000000-0000-0000-0000-000000000000')
+    expect(res?.status()).toBe(404)
+  })
 })

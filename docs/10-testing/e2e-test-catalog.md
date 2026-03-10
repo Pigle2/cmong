@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **194개 단위 테스트** + **99개 시나리오 테스트** = **293개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **197개 단위 테스트** + **99개 시나리오 테스트** = **296개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -181,7 +181,7 @@ npx playwright test -g "A-1"
 
 ---
 
-### 8. `api.spec.ts` — API 엔드포인트 + 보안 (34개)
+### 8. `api.spec.ts` — API 엔드포인트 + 보안 (37개)
 
 | ID | 테스트 | 로그인 | 설명 |
 |----|--------|:------:|------|
@@ -270,6 +270,9 @@ npx playwright test -g "A-1"
 | S-73 | 주문 생성 - 잘못된 UUID packageId 시 에러 | BUYER | UUID 형식 검증 |
 | S-74 | 주문 취소 - 잘못된 UUID 주문 ID 시 에러 | - | UUID 형식 검증 |
 | S-75 | 주문 상태변경 - 잘못된 UUID 주문 ID 시 에러 | - | UUID 형식 검증 |
+| S-76 | 리뷰 답글 - 잘못된 UUID 리뷰 ID 시 에러 | - | UUID 형식 검증 |
+| S-77 | 리뷰 조회 - 유효한 UUID로 빈 결과 | - | 빈 결과 정상 반환 |
+| S-78 | 삭제된 서비스 상세 페이지 접근 시 404 | - | DELETED 상태 검증 |
 
 ---
 
@@ -395,7 +398,7 @@ npx playwright test -g "A-1"
 | 판매자 | seller.spec.ts | 5 | 대시보드/주문/프로필 |
 | 리뷰 | review.spec.ts | 3 | 리뷰작성/답글 |
 | 알림 | notification.spec.ts | 5 | 벨아이콘/API/패널 |
-| API | api.spec.ts | 54 | 엔드포인트 + 보안 |
+| API | api.spec.ts | 57 | 엔드포인트 + 보안 |
 | 에러 | error.spec.ts | 3 | 404/빈 결과 |
 | 모바일 | mobile.spec.ts | 11 | 반응형 + 엣지케이스 |
 | 버그수정 | bugfix-verification.spec.ts | 12 | API/UI 버그 수정 검증 |

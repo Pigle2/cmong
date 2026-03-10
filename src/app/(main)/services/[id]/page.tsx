@@ -36,7 +36,7 @@ export default async function ServiceDetailPage({ params }: Props) {
     .eq('id', params.id)
     .single()
 
-  if (!service) notFound()
+  if (!service || service.status === 'DELETED') notFound()
 
   // Get seller profile
   const { data: sellerProfile } = await supabase
