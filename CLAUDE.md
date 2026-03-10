@@ -4,7 +4,7 @@
 
 ## 주요 문서
 - **기획 문서**: `docs/` 디렉토리 (27개)
-- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 263개 (164 단위 + 99 시나리오)
+- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 266개 (167 단위 + 99 시나리오)
 - **구현 계획**: `.claude/plans/rippling-foraging-moore.md`
 
 ## 작업 규칙

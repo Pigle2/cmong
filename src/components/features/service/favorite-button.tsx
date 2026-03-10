@@ -15,11 +15,11 @@ export function FavoriteButton({ serviceId }: FavoriteButtonProps) {
   const { user } = useUser()
   const [isFavorite, setIsFavorite] = useState(false)
   const [loading, setLoading] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
     if (!user) return
     const check = async () => {
+      const supabase = createClient()
       const { data } = await supabase
         .from('favorites')
         .select('id')
@@ -38,32 +38,25 @@ export function FavoriteButton({ serviceId }: FavoriteButtonProps) {
     }
     setLoading(true)
     const prevFavorite = isFavorite
+    setIsFavorite(!isFavorite)
     try {
-      if (isFavorite) {
-        setIsFavorite(false)
-        const { error } = await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('service_id', serviceId)
-        if (error) {
-          setIsFavorite(prevFavorite)
-          toast({ title: '찜 삭제에 실패했습니다', variant: 'destructive' })
-          return
-        }
-        toast({ title: '찜 목록에서 삭제했습니다' })
-      } else {
-        setIsFavorite(true)
-        const { error } = await supabase
-          .from('favorites')
-          .insert({ user_id: user.id, service_id: serviceId })
-        if (error) {
-          setIsFavorite(prevFavorite)
-          toast({ title: '찜 추가에 실패했습니다', variant: 'destructive' })
-          return
-        }
-        toast({ title: '찜 목록에 추가했습니다' })
+      const res = await fetch('/api/favorites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serviceId }),
+      })
+      const body = await res.json()
+
+      if (!res.ok || !body.success) {
+        setIsFavorite(prevFavorite)
+        toast({ title: body?.error?.message || '찜 처리에 실패했습니다', variant: 'destructive' })
+        return
       }
+
+      toast({ title: body.data.favorited ? '찜 목록에 추가했습니다' : '찜 목록에서 삭제했습니다' })
+    } catch {
+      setIsFavorite(prevFavorite)
+      toast({ title: '찜 처리에 실패했습니다', variant: 'destructive' })
     } finally {
       setLoading(false)
     }

@@ -192,11 +192,12 @@ export async function DELETE(
     )
   }
 
-  // 고아 데이터 정리: 찜 목록에서 제거
-  await supabase
-    .from('favorites')
-    .delete()
-    .eq('service_id', params.id)
+  // 고아 데이터 정리: 관련 데이터 일괄 삭제
+  await Promise.all([
+    supabase.from('favorites').delete().eq('service_id', params.id),
+    supabase.from('service_tags').delete().eq('service_id', params.id),
+    supabase.from('service_images').delete().eq('service_id', params.id),
+  ])
 
   return NextResponse.json({ success: true })
 }
