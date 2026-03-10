@@ -4,7 +4,7 @@
 
 ## 주요 문서
 - **기획 문서**: `docs/` 디렉토리 (27개)
-- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 266개 (167 단위 + 99 시나리오)
+- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 268개 (169 단위 + 99 시나리오)
 - **구현 계획**: `.claude/plans/rippling-foraging-moore.md`
 
 ## 작업 규칙
@@ -55,9 +55,10 @@
 | 12 | `8a46472` | 판매자 프로필 TOCTOU 수정 + 서비스 삭제 API route 분리 |
 | 13 | `dabd8fb` | 서비스 편집 API route 분리 (클라이언트 직접 DB 접근 제거) |
 | 14 | `ee37184` | 서비스 삭제 고아 데이터 정리 + 찜 버튼 API route 분리 |
+| 15 | *(pending)* | 채팅 자동 재입장 TOCTOU 수정 + use-user 프로필 에러 처리 |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
-- 채팅 메시지 전송 시 상대방 자동 재입장 SELECT+UPDATE 원자성 부족
 - 서비스 등록/편집 시 카테고리 변경 검증 미흡
 - 주문 상태 전이 엣지케이스 (동시 취소/납품 등)
-- use-user.tsx 프로필 조회 실패 시 에러 무시
+- use-realtime-messages.tsx 메시지 로드 실패 시 에러 상태 미반영
+- 회원탈퇴 로직 클라이언트 직접 DB 접근

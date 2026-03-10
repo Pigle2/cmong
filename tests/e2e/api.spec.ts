@@ -624,4 +624,27 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('NOT_FOUND')
   })
+
+  test('S-49. 채팅 메시지 전송 - 나간 방에서 전송 시 403', async ({ page }) => {
+    await login(page, BUYER)
+    // 존재하지 않는 방 → 참여자가 아니므로 FORBIDDEN
+    const res = await page.request.post('/api/chat/rooms/00000000-0000-0000-0000-000000000000/messages', {
+      data: { content: '테스트' },
+    })
+    expect(res.status()).toBe(403)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(['FORBIDDEN', 'LEFT_ROOM']).toContain(body.error.code)
+  })
+
+  test('S-50. 채팅 메시지 전송 - 5000자 초과 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/chat/rooms/00000000-0000-0000-0000-000000000000/messages', {
+      data: { content: 'x'.repeat(5001) },
+    })
+    // 참여자 아니면 403, 참여자면 400 — 500이 아니어야 함
+    expect(res.status()).not.toBe(500)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+  })
 })

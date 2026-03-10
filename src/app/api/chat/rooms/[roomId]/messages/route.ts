@@ -86,19 +86,13 @@ export async function POST(
   }
 
   // 상대방이 나간 상태(is_active=false)면 자동 재입장 처리
-  const { data: otherParticipant } = await admin
+  // SELECT+UPDATE 대신 조건부 UPDATE 한 번으로 원자적 처리 (TOCTOU 방지)
+  await admin
     .from('chat_participants')
-    .select('id, is_active')
+    .update({ is_active: true, rejoined_at: new Date().toISOString(), left_at: null })
     .eq('room_id', roomId)
     .neq('user_id', user.id)
-    .single()
-
-  if (otherParticipant && !otherParticipant.is_active) {
-    await admin
-      .from('chat_participants')
-      .update({ is_active: true, rejoined_at: new Date().toISOString(), left_at: null })
-      .eq('id', otherParticipant.id)
-  }
+    .eq('is_active', false)
 
   const { error } = await admin.from('chat_messages').insert({
     room_id: roomId,

@@ -24,16 +24,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
 
   const fetchProfile = async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-      setProfile(data)
-    } catch {
-      // profile fetch failed silently
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    if (error) {
+      console.error('Profile fetch failed:', error.message)
+      setProfile(null)
+      return
     }
+    setProfile(data)
   }
 
   useEffect(() => {
