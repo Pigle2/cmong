@@ -470,4 +470,42 @@ test.describe('API 보안', () => {
     const body = await res.json()
     expect(body.success).toBe(false)
   })
+
+  test('S-36. 프로필 수정 - 인증 없이 호출 시 401', async ({ request }) => {
+    const res = await request.fetch('/api/profiles', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ nickname: '테스트' }),
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-37. 프로필 수정 - 닉네임 누락 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.fetch('/api/profiles', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ nickname: '' }),
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-38. 프로필 수정 - bio 500자 초과 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.fetch('/api/profiles', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ nickname: '테스트', bio: 'x'.repeat(501) }),
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
 })

@@ -89,11 +89,15 @@ export function useRealtimeNotifications(userId: string | undefined) {
   const markAllRead = async () => {
     if (!userId) return
     const supabase = supabaseRef.current
-    await supabase
+    const { error } = await supabase
       .from('notifications')
       .update({ is_read: true })
       .eq('user_id', userId)
       .eq('is_read', false)
+    if (error) {
+      console.error('markAllRead error:', error.message)
+      return
+    }
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
     setUnreadCount(0)
   }

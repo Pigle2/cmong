@@ -73,27 +73,29 @@ export default function SettingsClient() {
   }, [])
 
   const handleSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      toast({ title: '로그인이 필요합니다', variant: 'destructive' })
+    if (!form.nickname.trim()) {
+      toast({ title: '닉네임을 입력해주세요', variant: 'destructive' })
       return
     }
 
     setLoading(true)
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
+      const res = await fetch('/api/profiles', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           nickname: form.nickname.trim(),
           bio: form.bio.trim() || null,
-        })
-        .eq('id', user.id)
-
-      if (error) {
-        toast({ title: '프로필 수정에 실패했습니다', variant: 'destructive' })
+        }),
+      })
+      const body = await res.json()
+      if (!res.ok || !body.success) {
+        toast({ title: body?.error?.message || '프로필 수정에 실패했습니다', variant: 'destructive' })
       } else {
         toast({ title: '프로필이 수정되었습니다' })
       }
+    } catch {
+      toast({ title: '프로필 수정에 실패했습니다', variant: 'destructive' })
     } finally {
       setLoading(false)
     }
