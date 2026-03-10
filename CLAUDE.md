@@ -62,9 +62,10 @@
 | 19 | `54f0b77` | 주문 API 텍스트 필드 최대 길이 검증 통일 (deliver/cancel/revision) |
 | 20 | `2e69761` | 채팅방 UUID 형식 검증 + 삭제된 서비스 상세 조회 차단 |
 | 21 | `ddfc612` | 보안 헤더 추가 + 서비스 목록 입력 검증 (PostgREST 인젝션/page/sort) |
+| 22 | *(pending)* | 서비스 편집 카테고리 변경 지원 + 패키지/태그 에러 처리 |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
-- 서비스 등록/편집 시 카테고리 변경 검증 미흡
 - 주문 상태 전이 엣지케이스 (동시 취소/납품 등)
 - Admin Client(Service Role) 불필요한 사용 — Chat API에서 일반 클라이언트로 전환 검토
 - CSP 정책 `unsafe-inline`/`unsafe-eval` 강화
+- 클라이언트 직접 Supabase 호출 잔존 (mypage/settings, orders/new, chat)

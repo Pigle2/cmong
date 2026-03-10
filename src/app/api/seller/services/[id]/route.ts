@@ -28,7 +28,7 @@ export async function PUT(
     )
   }
 
-  const { title, description, packages, tags } = body
+  const { title, description, categoryId, packages, tags } = body
 
   // 입력값 검증
   if (!title || typeof title !== 'string' || title.trim().length === 0 || title.length > 100) {
@@ -41,6 +41,13 @@ export async function PUT(
   if (description && (typeof description !== 'string' || description.length > 10000)) {
     return NextResponse.json(
       { success: false, error: { code: 'BAD_REQUEST', message: '설명은 최대 10000자입니다' } },
+      { status: 400 }
+    )
+  }
+
+  if (categoryId !== undefined && (typeof categoryId !== 'number' || categoryId <= 0)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '유효한 카테고리 ID가 필요합니다' } },
       { status: 400 }
     )
   }
@@ -73,14 +80,35 @@ export async function PUT(
     )
   }
 
+  // 카테고리 변경 시 존재 여부 확인
+  if (categoryId !== undefined) {
+    const { data: category } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('id', categoryId)
+      .single()
+
+    if (!category) {
+      return NextResponse.json(
+        { success: false, error: { code: 'NOT_FOUND', message: '카테고리를 찾을 수 없습니다' } },
+        { status: 404 }
+      )
+    }
+  }
+
   // 서비스 정보 UPDATE (status는 변경하지 않음)
+  const updateData: Record<string, unknown> = {
+    title: title.trim(),
+    description: description?.trim() || '',
+    updated_at: new Date().toISOString(),
+  }
+  if (categoryId !== undefined) {
+    updateData.category_id = categoryId
+  }
+
   const { error: updateError } = await supabase
     .from('services')
-    .update({
-      title: title.trim(),
-      description: description?.trim() || '',
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq('id', params.id)
     .eq('seller_id', user.id)
 
@@ -93,6 +121,7 @@ export async function PUT(
   }
 
   // 패키지 처리
+  const errors: string[] = []
   if (packages && Array.isArray(packages)) {
     for (const pkg of packages) {
       if (!VALID_TIERS.includes(pkg.tier)) continue
@@ -111,25 +140,48 @@ export async function PUT(
       }
 
       if (pkg.id) {
-        // 기존 패키지가 이 서비스 소유인지 확인 후 업데이트
-        await supabase.from('service_packages').update(data).eq('id', pkg.id).eq('service_id', params.id)
+        const { error } = await supabase.from('service_packages').update(data).eq('id', pkg.id).eq('service_id', params.id)
+        if (error) {
+          console.error('package update error:', error.message)
+          errors.push('패키지 수정 실패')
+        }
       } else {
-        await supabase.from('service_packages').insert(data)
+        const { error } = await supabase.from('service_packages').insert(data)
+        if (error) {
+          console.error('package insert error:', error.message)
+          errors.push('패키지 추가 실패')
+        }
       }
     }
   }
 
   // 태그 처리: 기존 삭제 후 재삽입
-  await supabase.from('service_tags').delete().eq('service_id', params.id)
+  const { error: tagDeleteError } = await supabase.from('service_tags').delete().eq('service_id', params.id)
+  if (tagDeleteError) {
+    console.error('tag delete error:', tagDeleteError.message)
+    errors.push('태그 삭제 실패')
+  }
+
   if (tags && Array.isArray(tags) && tags.length > 0) {
     const validTags = tags
       .filter((t: unknown) => typeof t === 'string' && t.trim().length > 0)
       .slice(0, MAX_TAGS)
     if (validTags.length > 0) {
-      await supabase.from('service_tags').insert(
+      const { error: tagInsertError } = await supabase.from('service_tags').insert(
         validTags.map((tag: string) => ({ service_id: params.id, tag: tag.trim() }))
       )
+      if (tagInsertError) {
+        console.error('tag insert error:', tagInsertError.message)
+        errors.push('태그 저장 실패')
+      }
     }
+  }
+
+  if (errors.length > 0) {
+    return NextResponse.json(
+      { success: false, error: { code: 'PARTIAL_ERROR', message: '일부 항목 저장에 실패했습니다: ' + errors.join(', ') } },
+      { status: 500 }
+    )
   }
 
   return NextResponse.json({ success: true })

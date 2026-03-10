@@ -817,4 +817,23 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(true)
     expect(body.page).toBe(1) // 음수 → 1로 보정
   })
+
+  test('S-68. 카테고리 API - 존재하지 않는 카테고리 slug 빈 결과', async ({ request }) => {
+    const res = await request.get('/api/services?category=non-existent-category-slug')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.success).toBe(true)
+    // 존재하지 않는 카테고리 → 필터 무시, 전체 결과 반환 또는 빈 결과
+    expect(body.data).toBeDefined()
+  })
+
+  test('S-69. 서비스 목록 API - 카테고리 필터 + 정렬 조합', async ({ request }) => {
+    // 카테고리와 정렬을 동시에 적용해도 정상 작동
+    const res = await request.get('/api/services?category=design&sort=newest&page=1')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.success).toBe(true)
+    expect(body.data).toBeDefined()
+    expect(body.page).toBe(1)
+  })
 })

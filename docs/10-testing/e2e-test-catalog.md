@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **186개 단위 테스트** + **99개 시나리오 테스트** = **285개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **188개 단위 테스트** + **99개 시나리오 테스트** = **287개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -181,7 +181,7 @@ npx playwright test -g "A-1"
 
 ---
 
-### 8. `api.spec.ts` — API 엔드포인트 + 보안 (26개)
+### 8. `api.spec.ts` — API 엔드포인트 + 보안 (28개)
 
 | ID | 테스트 | 로그인 | 설명 |
 |----|--------|:------:|------|
@@ -262,6 +262,8 @@ npx playwright test -g "A-1"
 | S-65 | 서비스 목록 - 검색어 PostgREST 인젝션 방지 (페이지) | - | 서버 컴포넌트 sanitize |
 | S-66 | 서비스 목록 - 잘못된 sort 파라미터로 페이지 정상 렌더링 | - | sort whitelist |
 | S-67 | API - 잘못된 page 파라미터 정상 처리 | - | page 음수 보정 |
+| S-68 | 카테고리 API - 존재하지 않는 카테고리 slug 빈 결과 | - | 카테고리 필터 검증 |
+| S-69 | 서비스 목록 API - 카테고리 필터 + 정렬 조합 | - | 복합 쿼리 검증 |
 
 ---
 
@@ -387,7 +389,7 @@ npx playwright test -g "A-1"
 | 판매자 | seller.spec.ts | 5 | 대시보드/주문/프로필 |
 | 리뷰 | review.spec.ts | 3 | 리뷰작성/답글 |
 | 알림 | notification.spec.ts | 5 | 벨아이콘/API/패널 |
-| API | api.spec.ts | 46 | 엔드포인트 + 보안 |
+| API | api.spec.ts | 48 | 엔드포인트 + 보안 |
 | 에러 | error.spec.ts | 3 | 404/빈 결과 |
 | 모바일 | mobile.spec.ts | 11 | 반응형 + 엣지케이스 |
 | 버그수정 | bugfix-verification.spec.ts | 12 | API/UI 버그 수정 검증 |
