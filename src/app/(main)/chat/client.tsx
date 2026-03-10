@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ChatRoomList } from '@/components/features/chat/chat-room-list'
 import { ChatMessageThread } from '@/components/features/chat/chat-message-thread'
+import { toast } from '@/hooks/use-toast'
 
 interface ChatPageClientProps {
   sellerId?: string
@@ -43,9 +44,12 @@ export default function ChatPageClient({ sellerId, serviceId, initialRooms, curr
         if (body.success && body.data?.id) {
           setSelectedRoom(body.data.id)
           refreshRooms()
+        } else {
+          toast({ title: body?.error?.message || '채팅방을 만들 수 없습니다', variant: 'destructive' })
         }
       } catch (e) {
         console.error('채팅방 생성/조회 실패:', e)
+        toast({ title: '채팅방 생성에 실패했습니다. 다시 시도해주세요.', variant: 'destructive' })
       }
     }
 

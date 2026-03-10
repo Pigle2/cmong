@@ -419,4 +419,23 @@ test.describe('API 보안', () => {
     // 쿠키 기반 중복 방지로 조회수가 같거나 1만 증가해야 함
     expect(body2.data.view_count).toBeLessThanOrEqual(viewCount1 + 1)
   })
+
+  test('S-31. 채팅 메시지 전송 - 인증 없이 호출 시 401', async ({ request }) => {
+    const res = await request.post('/api/chat/rooms/00000000-0000-0000-0000-000000000000/messages', {
+      data: { content: '테스트 메시지' },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-32. 채팅 메시지 전송 - 빈 내용 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/chat/rooms/00000000-0000-0000-0000-000000000000/messages', {
+      data: { content: '' },
+    })
+    // 403(비참여자) 또는 400(빈 내용) — 500이 아니어야 함
+    expect(res.status()).not.toBe(500)
+  })
 })
