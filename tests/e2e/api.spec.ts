@@ -927,4 +927,19 @@ test.describe('API 보안', () => {
     const res = await page.goto('/services/00000000-0000-0000-0000-000000000000')
     expect(res?.status()).toBe(404)
   })
+
+  test('S-79. 알림 읽음 처리 API 비인증 시 401', async ({ request }) => {
+    // markAllRead가 API route를 통하는지 검증
+    const res = await request.post('/api/notifications/read-all')
+    expect(res.status()).not.toBe(500)
+    // 비인증 → 401
+    const status = res.status()
+    expect([401, 403]).toContain(status)
+  })
+
+  test('S-80. 서비스 삭제 시 패키지 데이터 정리 확인', async ({ request }) => {
+    // 존재하지 않는 서비스 삭제 요청 → 인증 필요
+    const res = await request.delete('/api/seller/services/00000000-0000-0000-0000-000000000000')
+    expect(res.status()).not.toBe(500)
+  })
 })

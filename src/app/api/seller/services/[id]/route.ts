@@ -252,6 +252,7 @@ export async function DELETE(
     supabase.from('favorites').delete().eq('service_id', params.id),
     supabase.from('service_tags').delete().eq('service_id', params.id),
     supabase.from('service_images').delete().eq('service_id', params.id),
+    supabase.from('service_packages').delete().eq('service_id', params.id),
   ])
 
   return NextResponse.json({ success: true })
