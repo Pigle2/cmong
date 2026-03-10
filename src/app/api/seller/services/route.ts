@@ -42,6 +42,13 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  if (description && (typeof description !== 'string' || description.length > 10000)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '설명은 최대 10000자입니다' } },
+      { status: 400 }
+    )
+  }
+
   if (status && !['DRAFT', 'ACTIVE'].includes(status)) {
     return NextResponse.json(
       { success: false, error: { code: 'BAD_REQUEST', message: '허용되지 않은 상태값입니다' } },

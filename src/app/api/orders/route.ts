@@ -38,6 +38,13 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  if (requirements && (typeof requirements !== 'string' || requirements.length > 5000)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '요구사항은 최대 5000자입니다' } },
+      { status: 400 }
+    )
+  }
+
   // 서비스 조회 — seller_id는 서버에서 가져옴 (클라이언트 조작 불가)
   const { data: service, error: serviceError } = await supabase
     .from('services')

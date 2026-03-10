@@ -679,4 +679,30 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('FORBIDDEN')
   })
+
+  test('S-54. 서비스 등록 - description 10000자 초과 시 400', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.post('/api/seller/services', {
+      data: { categoryId: 1, title: '테스트', description: 'x'.repeat(10001) },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-55. 주문 생성 - requirements 5000자 초과 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders', {
+      data: {
+        serviceId: '00000000-0000-0000-0000-000000000000',
+        packageId: '00000000-0000-0000-0000-000000000000',
+        requirements: 'x'.repeat(5001),
+      },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
 })
