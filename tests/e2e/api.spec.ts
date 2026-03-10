@@ -438,4 +438,36 @@ test.describe('API 보안', () => {
     // 403(비참여자) 또는 400(빈 내용) — 500이 아니어야 함
     expect(res.status()).not.toBe(500)
   })
+
+  test('S-33. 서비스 등록 - 인증 없이 호출 시 401', async ({ request }) => {
+    const res = await request.post('/api/seller/services', {
+      data: { categoryId: 1, title: '테스트 서비스' },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-34. 서비스 등록 - 필수값 누락 시 400', async ({ page }) => {
+    await login(page, SELLER)
+    // title 없이 요청
+    const res = await page.request.post('/api/seller/services', {
+      data: { categoryId: 1 },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-35. 서비스 등록 - 잘못된 status 값 거부', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.post('/api/seller/services', {
+      data: { categoryId: 1, title: '테스트', status: 'DELETED' },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+  })
 })

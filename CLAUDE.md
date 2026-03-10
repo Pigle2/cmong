@@ -1,3 +1,20 @@
+## 프로젝트 개요
+- Next.js 14 App Router + Supabase + shadcn/ui + Tailwind + Zustand
+- 배포: Vercel (https://cmong-chi.vercel.app) — `git push`만 하면 자동 배포
+
+## 주요 문서
+- **기획 문서**: `docs/` 디렉토리 (27개)
+- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 250개 (151 단위 + 99 시나리오)
+- **구현 계획**: `.claude/plans/rippling-foraging-moore.md`
+
+## 작업 규칙
+- 한국어로 대화
+- 문제 발견 시 근본 원인(root cause)을 먼저 파악하고 유저에게 설명한 뒤, 본질적 수정 (임시 우회책/폴백 X)
+- 모르는 것은 추측하지 말고: ① WebSearch 먼저 ② 그래도 모르면 유저에게 질문
+- 버그/문제 수정 후 반드시: ① 관련 기능 테스트 작성 ② `docs/10-testing/e2e-test-catalog.md` 업데이트 ③ 해당 테스트 실행하여 통과 확인
+- 테스트는 관련 파일만 선택 실행 (전체 실행 ~7분이므로)
+- 실시간 채팅 테스트(RT-1~3)는 2 브라우저 컨텍스트 사용, 타임아웃 90초
+
 ## Skills
 
 커스텀 검증 및 유지보수 스킬은 `.claude/skills/`에 정의되어 있습니다.
@@ -6,3 +23,40 @@
 |-------|---------|
 | `verify-implementation` | 프로젝트의 모든 verify 스킬을 순차 실행하여 통합 검증 보고서를 생성합니다 |
 | `manage-skills` | 세션 변경사항을 분석하고, 검증 스킬을 생성/업데이트하며, CLAUDE.md를 관리합니다 |
+
+## 자율 개선 스케줄
+
+세션 시작 시 아래 명령으로 자율 개선 루프를 재설정할 것:
+
+```
+/loop 120m 이 프로젝트를 자율적으로 분석하고 개선해줘. 사용자 확인 없이 직접 판단하여 실행할 것. 매 실행마다: 1) 코드 품질 이슈, 버그, 보안 취약점(SQL injection, XSS, 인증 우회, RLS 등) 탐색 2) 발견된 문제 중 가장 중요한 1-2개를 직접 수정 3) 수정한 내용에 대한 테스트 작성 및 실행하여 통과 확인 4) docs/10-testing/e2e-test-catalog.md 업데이트 5) 변경사항을 git commit (메시지에 무엇을 왜 고쳤는지 명시). 이전 실행에서 고친 부분은 건너뛰고 매번 새로운 개선점을 찾을 것.
+```
+
+### 출력 형식
+- 시작: `⏱ 자율 개선 시작: YYYY-MM-DD HH:MM:SS`
+- 종료: 요약 테이블 + `⏱ 자율 개선 종료: YYYY-MM-DD HH:MM:SS`
+- 작업 완료 후 반드시 git commit
+
+### 완료된 개선 사이클 (2026-03-09 ~ 2026-03-10)
+
+| # | 커밋 | 내용 |
+|---|------|------|
+| 1 | `a1a6b80` | 리뷰/주문 생성 서버사이드 권한 검증 |
+| 2 | `cb4fcd5` | 주문 상태 변경 클라이언트 DB 접근 제거 + PostgREST 인젝션 방지 |
+| 3 | `0acdd0f` | 서비스 편집 status 조작 방지 + 패키지 가격 검증 + 탈퇴 입력 검증 |
+| 4 | `3a7579c` | 주문 API TOCTOU 동시성 버그 수정 + DB 에러 메시지 노출 차단 |
+| 5 | `0159929` | 조회수 레이스컨디션 수정 + 찜 서비스 존재 검증 |
+| 6 | `0080dbc` | 4개 페이지 서버 인증 가드 + 알림 link XSS 방지 |
+| 7 | `07d38f1` | useToast 메모리 누수 수정 + 에러 바운더리 추가 |
+| 8 | `eaa57d7` | 10개 API route JSON 파싱 에러 핸들링 + 채팅방 serviceId 검증 |
+| 9 | `7c8c7a5` | 채팅 메시지 전송/방 생성 에러 핸들링 추가 |
+| 10 | (pending) | 서비스 등록 API route 분리 + auto-confirm changed_by 수정 |
+
+### 남은 알려진 이슈 (다음 사이클 후보)
+- 서비스 편집(`seller/services/[id]/edit/client.tsx`): 클라이언트 직접 DB UPDATE/DELETE → API route 분리 필요
+- 프로필 수정(`mypage/settings/client.tsx`): 클라이언트 직접 DB UPDATE
+- 판매자 프로필(`seller/profile/client.tsx`): upsert TOCTOU 가능성
+- 서비스 삭제 시 패키지/태그 고아 데이터
+- auto-confirm changed_by가 seller_id로 설정 (시스템 액션)
+- 알림 markAllRead() DB 실패 시 UI 불일치
+- 채팅 메시지 전송 시 상대방 자동 재입장 UX 혼동

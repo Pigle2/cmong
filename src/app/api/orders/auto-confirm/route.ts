@@ -65,13 +65,13 @@ export async function POST(request: NextRequest) {
       continue
     }
 
-    // 상태 히스토리 기록 (시스템 변경이므로 changed_by는 seller_id로 대체)
+    // 상태 히스토리 기록 (시스템 자동 변경)
     await supabase.from('order_status_history').insert({
       order_id: order.id,
       from_status: 'DELIVERED',
       to_status: 'COMPLETED',
-      changed_by: order.seller_id,
-      note: '자동 구매 확정 (납품 후 5일 경과)',
+      changed_by: order.buyer_id,
+      note: '[시스템] 자동 구매 확정 (납품 후 5일 경과)',
     })
 
     // 구매자에게 알림

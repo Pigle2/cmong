@@ -96,109 +96,77 @@ export default function NewServiceClient() {
   }
 
   const handleSubmit = async (status: 'DRAFT' | 'ACTIVE') => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
     const categoryId = form.leafCategoryId || form.subCategoryId || form.categoryId
     if (!categoryId || !form.title.trim()) {
       toast({ title: '카테고리와 제목은 필수입니다', variant: 'destructive' })
       return
     }
 
-    setLoading(true)
-
-    // Create service
-    const { data: service, error } = await supabase
-      .from('services')
-      .insert({
-        seller_id: user.id,
-        category_id: parseInt(categoryId),
-        title: form.title.trim(),
-        description: form.description.trim(),
-        status,
-      })
-      .select()
-      .single()
-
-    if (error || !service) {
-      toast({ title: '서비스 등록에 실패했습니다', variant: 'destructive' })
-      setLoading(false)
-      return
-    }
-
-    // Validate packages
+    // 클라이언트 사전 검증
     for (const pkg of form.packages) {
       const hasPrice = pkg.price !== ''
       const hasWorkDays = pkg.workDays !== ''
       if (hasPrice && !hasWorkDays) {
         toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 가격을 입력하면 작업일도 입력해야 합니다`, variant: 'destructive' })
-        setLoading(false)
         return
       }
       if (!hasPrice && hasWorkDays) {
         toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 작업일을 입력하면 가격도 입력해야 합니다`, variant: 'destructive' })
-        setLoading(false)
         return
       }
       if (hasPrice && parseInt(pkg.price) <= 0) {
         toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 가격은 1 이상이어야 합니다`, variant: 'destructive' })
-        setLoading(false)
         return
       }
       if (hasWorkDays && parseInt(pkg.workDays) <= 0) {
         toast({ title: `${PACKAGE_TIER_LABELS[pkg.tier]}: 작업일은 1 이상이어야 합니다`, variant: 'destructive' })
-        setLoading(false)
         return
       }
     }
 
-    // Create packages
-    const validPackages = form.packages.filter((p) => p.price && p.workDays)
-    if (validPackages.length > 0) {
-      await supabase.from('service_packages').insert(
-        validPackages.map((p) => ({
-          service_id: service.id,
+    setLoading(true)
+    try {
+      const validPackages = form.packages
+        .filter((p) => p.price && p.workDays)
+        .map((p) => ({
           tier: p.tier,
           name: p.name || PACKAGE_TIER_LABELS[p.tier],
           description: p.description,
           price: parseInt(p.price),
-          work_days: parseInt(p.workDays),
-          revision_count: parseInt(p.revisionCount) || 0,
+          workDays: parseInt(p.workDays),
+          revisionCount: parseInt(p.revisionCount) || 0,
         }))
-      )
-    }
 
-    // Create tags
-    if (form.tags.trim()) {
-      const tags = form.tags.split(',').map((t) => t.trim()).filter(Boolean)
-      if (tags.length > 0) {
-        await supabase.from('service_tags').insert(
-          tags.map((tag) => ({ service_id: service.id, tag }))
-        )
-      }
-    }
+      const tags = form.tags.trim()
+        ? form.tags.split(',').map((t) => t.trim()).filter(Boolean)
+        : []
 
-    // Ensure seller_profile exists
-    const { data: existingProfile } = await supabase
-      .from('seller_profiles')
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!existingProfile) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('nickname')
-        .eq('id', user.id)
-        .single()
-      await supabase.from('seller_profiles').insert({
-        user_id: user.id,
-        display_name: profile?.nickname || '판매자',
+      const res = await fetch('/api/seller/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          categoryId: parseInt(categoryId),
+          title: form.title.trim(),
+          description: form.description.trim(),
+          status,
+          packages: validPackages.length > 0 ? validPackages : undefined,
+          tags: tags.length > 0 ? tags : undefined,
+        }),
       })
-    }
 
-    toast({ title: status === 'ACTIVE' ? '서비스가 등록되었습니다' : '임시저장되었습니다' })
-    router.push('/seller/services')
+      const body = await res.json()
+      if (!res.ok || !body.success) {
+        toast({ title: body?.error?.message || '서비스 등록에 실패했습니다', variant: 'destructive' })
+        return
+      }
+
+      toast({ title: status === 'ACTIVE' ? '서비스가 등록되었습니다' : '임시저장되었습니다' })
+      router.push('/seller/services')
+    } catch {
+      toast({ title: '서비스 등록에 실패했습니다', variant: 'destructive' })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
