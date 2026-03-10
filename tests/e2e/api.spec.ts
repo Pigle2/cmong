@@ -758,4 +758,26 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('BAD_REQUEST')
   })
+
+  test('S-61. 채팅방 생성 - 잘못된 UUID 형식 sellerId 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/chat/rooms', {
+      data: { sellerId: 'not-a-valid-uuid' },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-62. 채팅방 생성 - 잘못된 UUID 형식 serviceId 시 400', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/chat/rooms', {
+      data: { sellerId: '00000000-0000-0000-0000-000000000001', serviceId: 'invalid' },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
 })

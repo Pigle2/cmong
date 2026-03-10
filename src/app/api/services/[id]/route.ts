@@ -21,7 +21,7 @@ export async function GET(
     .eq('id', id)
     .single()
 
-  if (error || !data) {
+  if (error || !data || data.status === 'DELETED') {
     return NextResponse.json(
       { success: false, error: { code: 'NOT_FOUND', message: '서비스를 찾을 수 없습니다' } },
       { status: 404 }

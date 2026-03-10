@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -18,16 +20,16 @@ export async function POST(request: NextRequest) {
   const { sellerId, serviceId, roomType = 'INQUIRY' } = body
 
   // 입력값 검증
-  if (!sellerId || typeof sellerId !== 'string') {
-    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: 'sellerId가 필요합니다' } }, { status: 400 })
+  if (!sellerId || typeof sellerId !== 'string' || !UUID_REGEX.test(sellerId)) {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '유효한 sellerId가 필요합니다' } }, { status: 400 })
   }
 
   if (!['INQUIRY', 'ORDER'].includes(roomType)) {
     return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '잘못된 roomType입니다' } }, { status: 400 })
   }
 
-  if (serviceId && typeof serviceId !== 'string') {
-    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: 'serviceId는 문자열이어야 합니다' } }, { status: 400 })
+  if (serviceId && (typeof serviceId !== 'string' || !UUID_REGEX.test(serviceId))) {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '유효한 serviceId가 필요합니다' } }, { status: 400 })
   }
 
   if (sellerId === user.id) {
