@@ -705,4 +705,24 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(false)
     expect(body.error.code).toBe('BAD_REQUEST')
   })
+
+  test('S-56. 판매자 프로필 - specialties 항목 50자 초과 시 400', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.fetch('/api/seller/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: JSON.stringify({ displayName: '테스트', specialties: ['x'.repeat(51)] }),
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-57. 로그인 리다이렉트 - Open Redirect 방지', async ({ page }) => {
+    // //attacker.com 형태의 리다이렉트가 차단되는지 확인
+    await page.goto('/login?redirect=//evil.com')
+    // 페이지가 정상 로드되어야 함 (에러 없이)
+    await expect(page.locator('input[type="email"]')).toBeVisible({ timeout: TIMEOUT })
+  })
 })

@@ -45,6 +45,13 @@ export async function PUT(request: NextRequest) {
     )
   }
 
+  if (specialties && specialties.some((s: unknown) => typeof s === 'string' && s.length > 50)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '전문 분야는 항목당 최대 50자입니다' } },
+      { status: 400 }
+    )
+  }
+
   const validSpecialties = specialties
     ? specialties.filter((s: unknown) => typeof s === 'string' && s.trim().length > 0).map((s: string) => s.trim())
     : []

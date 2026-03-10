@@ -4,7 +4,7 @@
 
 ## 주요 문서
 - **기획 문서**: `docs/` 디렉토리 (27개)
-- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 273개 (174 단위 + 99 시나리오)
+- **E2E 테스트 목록**: `docs/10-testing/e2e-test-catalog.md` — 총 275개 (176 단위 + 99 시나리오)
 - **구현 계획**: `.claude/plans/rippling-foraging-moore.md`
 
 ## 작업 규칙
@@ -58,9 +58,11 @@
 | 15 | `73047a0` | 채팅 자동 재입장 TOCTOU 수정 + use-user 프로필 에러 처리 |
 | 16 | `9faa047` | 채팅 메시지 에러 상태 반영 + 리뷰 답글 중복 방지 |
 | 17 | `aa59bfa` | 서비스 등록 description + 주문 requirements 길이 검증 추가 |
+| 18 | *(pending)* | 로그인 Open Redirect 방지 + specialties 항목 길이 검증 |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
 - 서비스 등록/편집 시 카테고리 변경 검증 미흡
 - 주문 상태 전이 엣지케이스 (동시 취소/납품 등)
 - 서비스 검색 가격 정렬 + 페이지네이션 부정확
-- 판매자 프로필 specialties 개별 항목 길이 제한 미검증
+- Admin Client(Service Role) 불필요한 사용 — Chat API에서 일반 클라이언트로 전환 검토
+- CSP 정책 `unsafe-inline`/`unsafe-eval` 강화
