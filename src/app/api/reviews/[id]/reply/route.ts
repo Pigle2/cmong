@@ -33,10 +33,10 @@ export async function POST(
     )
   }
 
-  // Verify user is the seller
+  // Verify user is the seller + check existing reply
   const { data: review } = await supabase
     .from('reviews')
-    .select('seller_id')
+    .select('seller_id, seller_reply')
     .eq('id', params.id)
     .single()
 
@@ -47,13 +47,21 @@ export async function POST(
     )
   }
 
+  if (review.seller_reply) {
+    return NextResponse.json(
+      { success: false, error: { code: 'ALREADY_REPLIED', message: '이미 답글을 작성했습니다' } },
+      { status: 409 }
+    )
+  }
+
   const { error } = await supabase
     .from('reviews')
     .update({
-      seller_reply: reply,
+      seller_reply: reply.trim(),
       seller_replied_at: new Date().toISOString(),
     })
     .eq('id', params.id)
+    .is('seller_reply', null)
 
   if (error) {
     console.error('review reply error:', error.message)

@@ -35,7 +35,7 @@ export function ChatMessageThread({
   currentUserId,
   onBack,
 }: ChatMessageThreadProps) {
-  const { messages, loading, refetch } = useRealtimeMessages(roomId)
+  const { messages, loading, error: messagesError, refetch } = useRealtimeMessages(roomId)
   const bottomRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const prevCountRef = useRef(0)
@@ -119,6 +119,11 @@ export function ChatMessageThread({
         {loading ? (
           <div className="flex items-center justify-center py-10">
             <p className="text-sm text-muted-foreground">메시지 로딩 중...</p>
+          </div>
+        ) : messagesError ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-10">
+            <p className="text-sm text-destructive">{messagesError}</p>
+            <Button variant="outline" size="sm" onClick={refetch}>다시 시도</Button>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center py-10">

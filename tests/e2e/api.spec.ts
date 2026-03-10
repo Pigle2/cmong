@@ -647,4 +647,36 @@ test.describe('API 보안', () => {
     const body = await res.json()
     expect(body.success).toBe(false)
   })
+
+  test('S-51. 리뷰 답글 - 인증 없이 호출 시 401', async ({ request }) => {
+    const res = await request.post('/api/reviews/00000000-0000-0000-0000-000000000000/reply', {
+      data: { reply: '감사합니다' },
+    })
+    expect(res.status()).toBe(401)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('UNAUTHORIZED')
+  })
+
+  test('S-52. 리뷰 답글 - 답글 내용 누락 시 400', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.post('/api/reviews/00000000-0000-0000-0000-000000000000/reply', {
+      data: { reply: '' },
+    })
+    expect(res.status()).toBe(400)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('BAD_REQUEST')
+  })
+
+  test('S-53. 리뷰 답글 - 존재하지 않는 리뷰 403', async ({ page }) => {
+    await login(page, SELLER)
+    const res = await page.request.post('/api/reviews/00000000-0000-0000-0000-000000000000/reply', {
+      data: { reply: '감사합니다' },
+    })
+    expect(res.status()).toBe(403)
+    const body = await res.json()
+    expect(body.success).toBe(false)
+    expect(body.error.code).toBe('FORBIDDEN')
+  })
 })

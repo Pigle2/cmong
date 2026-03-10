@@ -8,6 +8,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js'
 export function useRealtimeMessages(roomId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [realtimeConnected, setRealtimeConnected] = useState(false)
   const supabaseRef = useRef(createClient())
 
@@ -15,11 +16,15 @@ export function useRealtimeMessages(roomId: string) {
     try {
       const res = await fetch(`/api/chat/rooms/${roomId}/messages`)
       const body = await res.json()
-      if (body.success) {
-        setMessages(body.data)
+      if (!res.ok || !body.success) {
+        setError(body?.error?.message || '메시지를 불러올 수 없습니다')
+        return
       }
+      setMessages(body.data)
+      setError(null)
     } catch (e) {
       console.error('fetch messages error:', e)
+      setError('메시지를 불러올 수 없습니다')
     } finally {
       setLoading(false)
     }
@@ -108,5 +113,5 @@ export function useRealtimeMessages(roomId: string) {
     }
   }, [roomId, fetchMessages])
 
-  return { messages, loading, realtimeConnected, refetch: fetchMessages }
+  return { messages, loading, error, realtimeConnected, refetch: fetchMessages }
 }
