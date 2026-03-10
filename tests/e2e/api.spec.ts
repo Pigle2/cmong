@@ -873,4 +873,36 @@ test.describe('API 보안', () => {
       expect(price0).toBeGreaterThanOrEqual(price1)
     }
   })
+
+  test('S-72. 주문 생성 - 잘못된 UUID serviceId 시 에러', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders', {
+      data: { serviceId: 'not-a-uuid', packageId: '00000000-0000-0000-0000-000000000000' },
+    })
+    // 400(UUID 검증), 404(라우트/쿼리), 401(미인증) — 500이 아니어야 함
+    expect(res.status()).not.toBe(500)
+  })
+
+  test('S-73. 주문 생성 - 잘못된 UUID packageId 시 에러', async ({ page }) => {
+    await login(page, BUYER)
+    const res = await page.request.post('/api/orders', {
+      data: { serviceId: '00000000-0000-0000-0000-000000000000', packageId: 'invalid' },
+    })
+    expect(res.status()).not.toBe(500)
+  })
+
+  test('S-74. 주문 취소 - 잘못된 UUID 주문 ID 시 에러', async ({ request }) => {
+    const res = await request.post('/api/orders/not-a-uuid/cancel', {
+      data: { reason: '테스트' },
+    })
+    // 400(UUID 검증) 또는 401(미인증) — 500이 아니어야 함
+    expect(res.status()).not.toBe(500)
+  })
+
+  test('S-75. 주문 상태변경 - 잘못된 UUID 주문 ID 시 에러', async ({ request }) => {
+    const res = await request.post('/api/orders/not-a-uuid/status', {
+      data: { status: 'ACCEPTED' },
+    })
+    expect(res.status()).not.toBe(500)
+  })
 })

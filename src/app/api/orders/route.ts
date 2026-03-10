@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -24,16 +26,16 @@ export async function POST(request: NextRequest) {
   const { serviceId, packageId, requirements } = body
 
   // 입력값 검증
-  if (!serviceId || typeof serviceId !== 'string') {
+  if (!serviceId || typeof serviceId !== 'string' || !UUID_REGEX.test(serviceId)) {
     return NextResponse.json(
-      { success: false, error: { code: 'BAD_REQUEST', message: 'serviceId가 필요합니다' } },
+      { success: false, error: { code: 'BAD_REQUEST', message: '유효한 serviceId가 필요합니다' } },
       { status: 400 }
     )
   }
 
-  if (!packageId || typeof packageId !== 'string') {
+  if (!packageId || typeof packageId !== 'string' || !UUID_REGEX.test(packageId)) {
     return NextResponse.json(
-      { success: false, error: { code: 'BAD_REQUEST', message: 'packageId가 필요합니다' } },
+      { success: false, error: { code: 'BAD_REQUEST', message: '유효한 packageId가 필요합니다' } },
       { status: 400 }
     )
   }

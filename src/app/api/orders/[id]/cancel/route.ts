@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 // 취소 가능 여부 및 환불 정책 결정
 function getCancelPolicy(status: string, isBuyer: boolean): { allowed: boolean; refundRate: number; reason?: string } {
   // DELIVERED 이후는 취소 불가
@@ -30,6 +32,13 @@ function getCancelPolicy(status: string, isBuyer: boolean): { allowed: boolean; 
 }
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  if (!UUID_REGEX.test(params.id)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '유효한 주문 ID가 필요합니다' } },
+      { status: 400 }
+    )
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
