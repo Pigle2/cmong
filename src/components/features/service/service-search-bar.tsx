@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button'
 
 interface ServiceSearchBarProps {
   defaultValue?: string
+  placeholder?: string
 }
 
-export function ServiceSearchBar({ defaultValue = '' }: ServiceSearchBarProps) {
+export function ServiceSearchBar({ defaultValue = '', placeholder = '어떤 서비스를 찾으시나요?' }: ServiceSearchBarProps) {
   const router = useRouter()
   const [query, setQuery] = useState(defaultValue)
 
@@ -28,7 +29,7 @@ export function ServiceSearchBar({ defaultValue = '' }: ServiceSearchBarProps) {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="어떤 서비스를 찾으시나요?"
+          placeholder={placeholder}
           className="pl-10"
         />
       </div>

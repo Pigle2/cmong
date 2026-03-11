@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ServiceCard } from '@/components/features/service/service-card'
 import { Button } from '@/components/ui/button'
+import { ServiceSearchBar } from '@/components/features/service/service-search-bar'
 import {
   Palette, Code, Video, Megaphone, Languages,
-  FileText, Briefcase, Hammer, GraduationCap, Scale, Search,
+  FileText, Briefcase, Hammer, GraduationCap, Scale,
 } from 'lucide-react'
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -56,20 +57,8 @@ export default async function HomePage() {
           <p className="mb-8 text-lg text-muted-foreground">
             디자인, 개발, 마케팅 등 비즈니스에 필요한 모든 전문 서비스
           </p>
-          <div className="mx-auto flex max-w-xl items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-              <Link href="/services" className="block">
-                <div className="h-12 w-full rounded-lg border bg-background pl-10 pr-4 flex items-center text-muted-foreground">
-                  어떤 서비스가 필요하세요?
-                </div>
-              </Link>
-            </div>
-            <Link href="/services">
-              <Button size="lg" className="h-12">
-                검색
-              </Button>
-            </Link>
+          <div className="mx-auto max-w-xl">
+            <ServiceSearchBar placeholder="어떤 서비스가 필요하세요?" />
           </div>
         </div>
       </section>
