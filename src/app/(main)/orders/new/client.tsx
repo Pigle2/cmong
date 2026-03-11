@@ -74,8 +74,7 @@ export default function NewOrderClient() {
       return
     }
 
-    toast({ title: '주문이 완료되었습니다' })
-    router.push(`/orders/${json.data.id}`)
+    router.push(`/orders/${json.data.id}/complete`)
   }
 
   if (!service || !pkg) {

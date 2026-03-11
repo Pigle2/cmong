@@ -85,14 +85,28 @@ export default async function HomePage() {
         <section className="py-12 bg-muted/30">
           <div className="mx-auto max-w-7xl px-4">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-bold">인기 서비스</h2>
+              <h2 className="text-2xl font-bold">인기 서비스 TOP 8</h2>
               <Link href="/services?sort=orders" className="text-sm text-primary hover:underline">
                 더보기
               </Link>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {popularServices.map((service: any) => (
-                <ServiceCard key={service.id} service={service} />
+              {popularServices.map((service: any, index: number) => (
+                <div key={service.id} className="relative">
+                  {index < 3 && (
+                    <div className={`absolute -left-1 -top-1 z-10 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-white shadow-md ${
+                      index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-amber-700'
+                    }`}>
+                      {index + 1}
+                    </div>
+                  )}
+                  {index >= 3 && (
+                    <div className="absolute -left-1 -top-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-muted-foreground/70 text-[10px] font-bold text-white shadow-sm">
+                      {index + 1}
+                    </div>
+                  )}
+                  <ServiceCard service={service} />
+                </div>
               ))}
             </div>
           </div>

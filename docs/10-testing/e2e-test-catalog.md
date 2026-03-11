@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **367개 단위 테스트** + **99개 시나리오 테스트** = **466개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **374개 단위 테스트** + **99개 시나리오 테스트** = **473개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -801,6 +801,27 @@ npx playwright test -g "A-1"
 
 ---
 
+### 45. `order-complete.spec.ts` — 주문 완료 페이지 (4개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| OCMP-1 | 주문 완료 페이지 기본 요소 표시 | BUYER | "주문이 완료되었습니다" 메시지 |
+| OCMP-2 | 주문 완료 페이지에 주문번호 표시 | BUYER | 주문번호 텍스트 존재 |
+| OCMP-3 | 주문 완료 페이지에 다음 단계 안내 | BUYER | "다음 단계" 가이드 |
+| OCMP-4 | 비인증 사용자 접근 리다이렉트 | - | /orders/uuid/complete → /login |
+
+---
+
+### 46. `popular-ranking.spec.ts` — 인기 서비스 순위 표시 (3개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| RANK-1 | "인기 서비스 TOP" 섹션 표시 | - | 메인 페이지 섹션 제목 |
+| RANK-2 | 순위 배지 표시 (1~3위 색상 구분) | - | 금/은/동 배지 |
+| RANK-3 | 더보기 링크가 /services?sort=orders 연결 | - | 더보기 href 검증 |
+
+---
+
 ### 27. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
@@ -854,6 +875,8 @@ npx playwright test -g "A-1"
 | 주문 상세 뒤로가기 | order-detail-back.spec.ts | 3 | 뒤로가기 링크/주문번호 표시/비인증 |
 | 푸터 링크 | footer-links.spec.ts | 5 | 고객지원 링크 3개/href 검증/FAQ 페이지 |
 | 채팅 읽지않음 배지 | chat-unread-badge.spec.ts | 3 | 메시지 헤더/빈 채팅방/비인증 |
+| 주문 완료 페이지 | order-complete.spec.ts | 4 | 완료 확인/주문번호/다음단계/비인증 |
+| 인기 서비스 순위 | popular-ranking.spec.ts | 3 | TOP 섹션/순위 배지/더보기 링크 |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -893,4 +916,6 @@ npx playwright test -g "A-1"
 | 주문 상세 뒤로가기/주문번호 | `order-detail-back.spec.ts` |
 | 푸터 고객지원 링크 | `footer-links.spec.ts` |
 | 채팅 읽지 않은 메시지 배지 | `chat-unread-badge.spec.ts` |
+| 주문 완료 페이지 | `order-complete.spec.ts` |
+| 인기 서비스 순위 표시 | `popular-ranking.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |
