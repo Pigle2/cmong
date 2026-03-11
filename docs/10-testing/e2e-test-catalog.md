@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **254개 단위 테스트** + **99개 시나리오 테스트** = **353개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **262개 단위 테스트** + **99개 시나리오 테스트** = **361개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -493,7 +493,33 @@ npx playwright test -g "A-1"
 
 ---
 
-### 21. `full-scenario.spec.ts` — 통합 시나리오 (99개)
+### 21. `service-detail-tabs.spec.ts` — 서비스 상세 탭 메뉴 (5개)
+
+> 탭 UI가 배포되기 전에는 TAB-1~5 전체 자동 스킵 처리. 배포 후 재실행 시 full 검증.
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| TAB-1 | 서비스 상세 페이지에 탭 메뉴가 표시됨 | - | role="tablist" + 탭 2개 이상 |
+| TAB-2 | "서비스 소개" 탭이 기본 선택됨 | - | aria-selected="true" 탭 텍스트 확인 |
+| TAB-3 | "리뷰" 탭 클릭 시 리뷰 내용이 표시됨 | - | 탭 클릭 → aria-selected + tabpanel 표시 |
+| TAB-4 | "포트폴리오" 탭이 존재함 | - | 포트폴리오 탭 존재 확인 |
+| TAB-5 | "FAQ" 탭이 존재함 | - | FAQ 탭 존재 확인 |
+
+---
+
+### 22. `view-toggle.spec.ts` — 그리드/리스트 뷰 토글 (3개)
+
+> 뷰 토글 UI가 배포되기 전에는 VW-1, VW-2 자동 스킵 처리. VW-3는 view=list URL 파라미터로 항상 실행.
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| VW-1 | /services 페이지에 그리드/리스트 토글 버튼이 표시됨 | - | aria-label 버튼 또는 view= 링크 존재 |
+| VW-2 | 리스트 뷰 버튼 클릭 시 URL에 view=list가 추가됨 | - | 클릭 → URL ?view=list 반영 |
+| VW-3 | view=list일 때 리스트형 카드가 표시됨 | - | ?view=list 접근 → 카드 렌더링 + URL 유지 |
+
+---
+
+### 23. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
 `full-scenario.spec.ts`는 단위 파일들과 동일한 테스트 ID를 사용하며, 하나의 파일에서 전체 시나리오를 순차 실행.
@@ -524,6 +550,8 @@ npx playwright test -g "A-1"
 | 카드 작업일 | service-card-workdays.spec.ts | 2 | "N일 이내" 형식 표시 검증 |
 | 서비스 필터 바 | service-filters.spec.ts | 9 | 가격/작업일/평점 Select + 건수 표시 + 초기화 |
 | GNB 카테고리 드롭다운 | category-dropdown.spec.ts | 7 | 헤더 카테고리 드롭다운 UI/라우팅 |
+| 서비스 상세 탭 메뉴 | service-detail-tabs.spec.ts | 5 | 탭 UI/기본선택/리뷰탭/포트폴리오/FAQ (미배포 시 스킵) |
+| 그리드/리스트 뷰 토글 | view-toggle.spec.ts | 3 | 토글 버튼/URL 반영/리스트 카드 (미배포 시 VW-1,2 스킵) |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -550,4 +578,6 @@ npx playwright test -g "A-1"
 | 서비스 카드 작업일 표시 | `service-card-workdays.spec.ts` |
 | 서비스 필터 바 (가격/작업일/평점/건수) | `service-filters.spec.ts` |
 | GNB 카테고리 드롭다운 | `category-dropdown.spec.ts` |
+| 서비스 상세 탭 메뉴 | `service-detail-tabs.spec.ts` |
+| 그리드/리스트 뷰 토글 | `view-toggle.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |

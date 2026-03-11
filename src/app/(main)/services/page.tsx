@@ -1,9 +1,12 @@
 export const dynamic = 'force-dynamic'
 
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { ServiceCard } from '@/components/features/service/service-card'
+import { ServiceListCard } from '@/components/features/service/service-list-card'
 import { ServiceSearchBar } from '@/components/features/service/service-search-bar'
 import { ServiceFilters } from '@/components/features/service/service-filters'
+import { ViewToggle } from '@/components/features/service/view-toggle'
 import { ITEMS_PER_PAGE } from '@/lib/constants'
 
 interface Props {
@@ -20,6 +23,8 @@ export default async function ServicesPage({ searchParams }: Props) {
   const sortParam = (searchParams.sort as string) || 'recommended'
   const sort = ALLOWED_SORTS.includes(sortParam) ? sortParam : 'recommended'
   const page = Math.max(1, parseInt((searchParams.page as string) || '1') || 1)
+  const viewParam = (searchParams.view as string) || 'grid'
+  const view = viewParam === 'list' ? 'list' : 'grid'
 
   // 가격 필터 파라미터 검증 (정수, 0 이상)
   const rawMinPrice = parseInt((searchParams.minPrice as string) || '')
@@ -174,13 +179,20 @@ export default async function ServicesPage({ searchParams }: Props) {
                 </>
               )}
             </p>
+            <Suspense fallback={null}>
+              <ViewToggle />
+            </Suspense>
           </div>
 
           {services && services.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {services.map((service: any) => (
-                <ServiceCard key={service.id} service={service} />
-              ))}
+            <div className={view === 'list' ? 'flex flex-col gap-3' : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'}>
+              {services.map((service: any) =>
+                view === 'list' ? (
+                  <ServiceListCard key={service.id} service={service} />
+                ) : (
+                  <ServiceCard key={service.id} service={service} />
+                )
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -206,6 +218,7 @@ export default async function ServicesPage({ searchParams }: Props) {
                     ...(maxPrice !== null && { maxPrice: String(maxPrice) }),
                     ...(workDays !== null && { workDays: String(workDays) }),
                     ...(minRating !== null && { minRating: String(minRating) }),
+                    ...(view !== 'grid' && { view }),
                     page: p.toString(),
                   }).toString()}`}
                   className={`flex h-9 w-9 items-center justify-center rounded-md text-sm ${

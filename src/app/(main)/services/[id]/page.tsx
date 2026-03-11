@@ -3,9 +3,8 @@ export const dynamic = 'force-dynamic'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { PackageComparison } from '@/components/features/service/package-comparison'
 import { FavoriteButton } from '@/components/features/service/favorite-button'
-import { ReviewList } from '@/components/features/review/review-list'
+import { ServiceDetailTabs } from '@/components/features/service/service-detail-tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -122,31 +121,16 @@ export default async function ServiceDetailPage({ params }: Props) {
             alt={service.title}
           />
 
-          {/* Description */}
-          <div className="prose max-w-none">
-            <h2 className="text-xl font-bold">서비스 설명</h2>
-            <div className="mt-4 whitespace-pre-wrap text-sm leading-relaxed">
-              {service.description || '서비스 설명이 없습니다.'}
-            </div>
-          </div>
-
-          <Separator className="my-8" />
-
-          {/* Package Comparison */}
-          <div>
-            <h2 className="mb-4 text-xl font-bold">패키지 비교</h2>
-            <PackageComparison packages={sortedPackages || []} serviceId={service.id} />
-          </div>
-
-          <Separator className="my-8" />
-
-          {/* Reviews */}
-          <div>
-            <h2 className="mb-4 text-xl font-bold">
-              리뷰 ({service.review_count})
-            </h2>
-            <ReviewList reviews={reviews || []} avgRating={Number(service.avg_rating)} />
-          </div>
+          {/* Tabs: 서비스 소개 / 포트폴리오 / 리뷰 / FAQ */}
+          <ServiceDetailTabs
+            description={service.description || ''}
+            packages={sortedPackages || []}
+            serviceId={service.id}
+            reviews={reviews || []}
+            reviewCount={service.review_count}
+            avgRating={Number(service.avg_rating)}
+            images={service.images || []}
+          />
         </div>
 
         {/* Sidebar - Seller Card */}
