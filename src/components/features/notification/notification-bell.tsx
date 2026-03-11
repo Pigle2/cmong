@@ -9,14 +9,62 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { useRealtimeNotifications } from '@/hooks/use-realtime-notifications'
 import { createClient } from '@/lib/supabase/client'
+import type { Notification, NotificationType } from '@/types'
 
 // 안전한 링크인지 검증 (상대경로만 허용, javascript: 등 차단)
 function isSafeLink(link: string): boolean {
   return link.startsWith('/')
 }
 
+type TabKey = 'ALL' | 'ORDER' | 'MESSAGE' | 'SYSTEM'
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'ALL', label: '전체' },
+  { key: 'ORDER', label: '주문' },
+  { key: 'MESSAGE', label: '메시지' },
+  { key: 'SYSTEM', label: '시스템' },
+]
+
+function filterByTab(notifications: Notification[], tab: TabKey): Notification[] {
+  if (tab === 'ALL') return notifications
+  if (tab === 'ORDER') return notifications.filter((n) => n.type === 'ORDER')
+  if (tab === 'MESSAGE') return notifications.filter((n) => n.type === 'CHAT')
+  // SYSTEM: REVIEW + SYSTEM
+  return notifications.filter((n) => n.type === 'REVIEW' || n.type === 'SYSTEM')
+}
+
+function NotificationItem({ notification }: { notification: Notification }) {
+  const content = (
+    <>
+      <p className="text-sm font-medium">{notification.title}</p>
+      <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+      <p className="text-xs text-muted-foreground mt-1">
+        {new Date(notification.created_at).toLocaleDateString('ko-KR', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      </p>
+    </>
+  )
+
+  const baseClass = `px-4 py-3 transition-colors ${!notification.is_read ? 'bg-accent/50' : ''}`
+
+  if (notification.link && isSafeLink(notification.link)) {
+    return (
+      <Link href={notification.link} className={`block hover:bg-accent ${baseClass}`}>
+        {content}
+      </Link>
+    )
+  }
+
+  return <div className={baseClass}>{content}</div>
+}
+
 export function NotificationBell() {
   const [userId, setUserId] = useState<string | undefined>(undefined)
+  const [activeTab, setActiveTab] = useState<TabKey>('ALL')
   const supabase = createClient()
 
   useEffect(() => {
@@ -28,6 +76,8 @@ export function NotificationBell() {
   }, [])
 
   const { notifications, unreadCount, markAllRead } = useRealtimeNotifications(userId)
+
+  const filtered = filterByTab(notifications, activeTab)
 
   return (
     <Popover>
@@ -57,55 +107,34 @@ export function NotificationBell() {
           )}
         </div>
         <Separator />
-        <ScrollArea className="h-[300px]">
-          {notifications.length === 0 ? (
+
+        {/* 탭 필터 */}
+        <div className="flex border-b">
+          {TABS.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                activeTab === tab.key
+                  ? 'border-b-2 border-primary text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <ScrollArea className="h-[280px]">
+          {filtered.length === 0 ? (
             <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
               알림이 없습니다
             </div>
           ) : (
             <div className="flex flex-col">
-              {notifications.map((notification) => (
+              {filtered.map((notification) => (
                 <div key={notification.id}>
-                  {notification.link && isSafeLink(notification.link) ? (
-                    <Link
-                      href={notification.link}
-                      className={`block px-4 py-3 hover:bg-accent transition-colors ${
-                        !notification.is_read ? 'bg-accent/50' : ''
-                      }`}
-                    >
-                      <p className="text-sm font-medium">{notification.title}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(notification.created_at).toLocaleDateString('ko-KR', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </Link>
-                  ) : (
-                    <div
-                      className={`px-4 py-3 ${
-                        !notification.is_read ? 'bg-accent/50' : ''
-                      }`}
-                    >
-                      <p className="text-sm font-medium">{notification.title}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(notification.created_at).toLocaleDateString('ko-KR', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
-                  )}
+                  <NotificationItem notification={notification} />
                   <Separator />
                 </div>
               ))}

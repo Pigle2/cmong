@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **280개 단위 테스트** + **99개 시나리오 테스트** = **379개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **293개 단위 테스트** + **99개 시나리오 테스트** = **392개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -582,6 +582,40 @@ npx playwright test -g "A-1"
 
 ---
 
+### 30. `package-tabs.spec.ts` — 패키지 탭 UI + 판매자 응답률 (7개)
+
+> 패키지 탭 UI(PKG-1~4)는 `package-comparison.tsx` 탭 형태 배포 전에는 자동 스킵.
+> 판매자 응답률(SEL-TAB-1~3)은 `seller_profiles.response_time` 데이터 없을 경우 스킵.
+> PKG-3는 배포 여부와 무관하게 항상 실행 ("구매하기" 또는 "주문하기" 중 하나 표시 검증).
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| PKG-1 | 패키지 탭 표시 (STANDARD/DELUXE/PREMIUM) | - | 탭 버튼 1개 이상 + 패키지 레이블 검증 (미배포 시 스킵) |
+| PKG-2 | 탭 클릭 시 해당 패키지 정보(가격) 표시 | - | 탭 전환 → text-2xl 가격 표시 (미배포 시 스킵) |
+| PKG-3 | "구매하기" 또는 "주문하기" 버튼 표시 | - | 탭 UI "구매하기" 또는 테이블 UI "주문하기" 중 하나 이상 존재 |
+| PKG-4 | 로그인 후 "구매하기" 클릭 → 주문 페이지 이동 | BUYER | /orders/new?service=&package= URL 확인 (미배포 시 스킵) |
+| SEL-TAB-1 | 서비스 상세 사이드바에 판매자 응답률 텍스트 표시 | - | "응답률 높음/보통/낮음" (response_time null 시 스킵) |
+| SEL-TAB-2 | 판매자 응답률 + 평균 응답시간(분) 동시 표시 | - | "응답률 N" + "평균 N분" 텍스트 동시 확인 |
+| SEL-TAB-3 | 응답률이 있는 서비스 순회 검증 | - | 서비스 목록 최대 5개 순회, response_time 있는 판매자 발견 시 텍스트 검증 |
+
+---
+
+### 31. `notification-tabs.spec.ts` — 알림 팝오버 탭 필터 (6개)
+
+> 알림 탭 UI(`notification-bell.tsx` 탭 필터)는 배포 전에는 NTF-TAB-2~6 자동 스킵.
+> NTF-TAB-1(팝오버 열림)은 배포 여부와 무관하게 항상 실행.
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| NTF-TAB-1 | 알림 벨 클릭 시 알림 팝오버가 열림 | BUYER | 벨 클릭 → Radix Popover + "알림" 헤딩 표시 |
+| NTF-TAB-2 | 알림 팝오버에 탭 필터 표시 (전체/주문/메시지/시스템) | BUYER | 4개 탭 button 모두 표시 (미배포 시 스킵) |
+| NTF-TAB-3 | 탭 클릭 시 active 스타일(text-primary) 적용 | BUYER | "주문" 탭 클릭 → className에 text-primary 포함 |
+| NTF-TAB-4 | 각 탭 클릭 시 알림 없음 or 목록 표시됨 | BUYER | 4개 탭 순서대로 클릭 → "알림이 없습니다" 또는 알림 아이템 확인 |
+| NTF-TAB-5 | 판매자도 알림 팝오버 탭 필터 사용 가능 | SELLER | 판매자 헤더 벨 클릭 → 4개 탭 표시 확인 |
+| NTF-TAB-6 | "전체" 탭이 기본 선택 상태로 표시됨 | BUYER | 팝오버 열릴 때 "전체" 탭 text-primary 클래스 확인 |
+
+---
+
 ### 27. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
@@ -620,6 +654,8 @@ npx playwright test -g "A-1"
 | 주문 프로그레스 바 | order-progress.spec.ts | 2 | 주문 상세 5단계 바 + 취소 메시지 (미배포 시 스킵) |
 | 마이페이지 UI 개선 | mypage-enhancements.spec.ts | 5 | 진행중/완료 분리/판매자 등급 배지 (미배포 시 스킵) |
 | 인기 전문가 섹션 | popular-experts.spec.ts | 4 | 메인 전문가 카드/닉네임/배지/평점/링크 (미배포 시 스킵) |
+| 패키지 탭 UI + 응답률 | package-tabs.spec.ts | 7 | 탭 STANDARD/DELUXE/PREMIUM/구매하기/응답률 텍스트 (미배포 시 일부 스킵) |
+| 알림 팝오버 탭 필터 | notification-tabs.spec.ts | 6 | 팝오버 열림/전체주문메시지시스템 탭/active 스타일 (미배포 시 스킵) |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -653,4 +689,6 @@ npx playwright test -g "A-1"
 | 주문 프로그레스 바 | `order-progress.spec.ts` |
 | 마이페이지 진행중/완료 분리 + 판매자 등급 배지 | `mypage-enhancements.spec.ts` |
 | 메인 페이지 인기 전문가 섹션 | `popular-experts.spec.ts` |
+| 패키지 탭 UI + 판매자 응답률 텍스트 | `package-tabs.spec.ts` |
+| 알림 팝오버 탭 필터 (전체/주문/메시지/시스템) | `notification-tabs.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |

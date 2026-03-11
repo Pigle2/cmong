@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Star, MessageSquare, Clock, CheckCircle } from 'lucide-react'
+import { Star, MessageSquare, Clock, CheckCircle, TrendingUp } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { SELLER_GRADES } from '@/lib/constants'
 import { ImageGallery } from '@/components/features/service/image-gallery'
@@ -202,10 +202,23 @@ export default async function ServiceDetailPage({ params }: Props) {
                 </div>
               </div>
 
-              {sellerProfile?.response_time && (
-                <div className="mb-4 flex items-center gap-1 text-sm text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5" />
-                  평균 응답 {sellerProfile.response_time}분
+              {sellerProfile?.response_time != null && (
+                <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+                    <span>
+                      {sellerProfile.response_time <= 30
+                        ? '응답률 높음'
+                        : sellerProfile.response_time <= 120
+                          ? '응답률 보통'
+                          : '응답률 낮음'}
+                    </span>
+                  </div>
+                  <span className="text-muted-foreground/60">·</span>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" />
+                    평균 {sellerProfile.response_time}분
+                  </div>
                 </div>
               )}
 
