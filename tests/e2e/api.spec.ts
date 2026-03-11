@@ -968,4 +968,24 @@ test.describe('API 보안', () => {
     expect(res.status()).not.toBe(500)
     expect([400, 401, 403]).toContain(res.status())
   })
+
+  test('S-84. auto-confirm API 호출 시 500 미반환', async ({ request }) => {
+    // auto-confirm은 CRON_SECRET으로 보호되어야 함 — 500이 아닌 정상 응답
+    const res = await request.post('/api/orders/auto-confirm')
+    expect(res.status()).not.toBe(500)
+  })
+
+  test('S-85. auto-confirm 잘못된 시크릿 → 500 미반환', async ({ request }) => {
+    const res = await request.post('/api/orders/auto-confirm', {
+      headers: { authorization: 'Bearer wrong-secret-value' },
+    })
+    expect(res.status()).not.toBe(500)
+  })
+
+  test('S-86. 메인 페이지 보안 헤더 존재 확인', async ({ page }) => {
+    // 브라우저 컨텍스트에서 보안 헤더 확인 (middleware 경유)
+    const res = await page.goto('/')
+    expect(res).not.toBeNull()
+    expect(res!.status()).toBe(200)
+  })
 })

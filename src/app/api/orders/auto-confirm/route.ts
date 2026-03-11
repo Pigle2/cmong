@@ -61,7 +61,8 @@ export async function POST(request: NextRequest) {
       .eq('status', 'DELIVERED') // 동시성 안전 처리
 
     if (updateError) {
-      errors.push(`${order.id}: ${updateError.message}`)
+      console.error(`auto-confirm update error for ${order.id}:`, updateError.message)
+      errors.push(order.id)
       continue
     }
 
