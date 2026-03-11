@@ -13,6 +13,7 @@ import { Star, MessageSquare, Clock, CheckCircle } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { SELLER_GRADES } from '@/lib/constants'
 import { ImageGallery } from '@/components/features/service/image-gallery'
+import { ServiceCard } from '@/components/features/service/service-card'
 
 interface Props {
   params: { id: string }
@@ -52,6 +53,20 @@ export default async function ServiceDetailPage({ params }: Props) {
     .eq('service_id', service.id)
     .order('created_at', { ascending: false })
     .limit(10)
+
+  // Get related services (same category, excluding current)
+  const { data: relatedServices } = await supabase
+    .from('services')
+    .select(`
+      *,
+      packages:service_packages(*),
+      seller:profiles!seller_id(id, nickname, avatar_url)
+    `)
+    .eq('category_id', service.category_id)
+    .eq('status', 'ACTIVE')
+    .neq('id', service.id)
+    .order('order_count', { ascending: false })
+    .limit(4)
 
   // Get parent category
   let parentCategory = null
@@ -131,6 +146,18 @@ export default async function ServiceDetailPage({ params }: Props) {
             avgRating={Number(service.avg_rating)}
             images={service.images || []}
           />
+
+          {/* Related Services */}
+          {relatedServices && relatedServices.length > 0 && (
+            <section className="mt-12">
+              <h2 className="mb-6 text-xl font-bold">관련 서비스</h2>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {relatedServices.map((related) => (
+                  <ServiceCard key={related.id} service={related} />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Sidebar - Seller Card */}

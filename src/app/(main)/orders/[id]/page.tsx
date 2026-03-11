@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { OrderTimeline } from '@/components/features/order/order-timeline'
+import { OrderProgressBar } from '@/components/features/order/order-progress-bar'
 import { OrderActions } from '@/components/features/order/order-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -62,6 +63,11 @@ export default async function OrderDetailPage({ params }: Props) {
         <Badge className={`text-sm ${ORDER_STATUS_COLORS[order.status] || ''}`}>
           {ORDER_STATUS[order.status as keyof typeof ORDER_STATUS]}
         </Badge>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="mb-6">
+        <OrderProgressBar status={order.status} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

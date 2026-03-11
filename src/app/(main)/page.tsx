@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ServiceCard } from '@/components/features/service/service-card'
 import { Button } from '@/components/ui/button'
-import { ServiceSearchBar } from '@/components/features/service/service-search-bar'
+import { HeroBanner } from '@/components/features/home/hero-banner'
 import {
   Palette, Code, Video, Megaphone, Languages,
   FileText, Briefcase, Hammer, GraduationCap, Scale,
@@ -49,19 +49,7 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-primary/5 via-primary/10 to-background py-16 md:py-24">
-        <div className="mx-auto max-w-7xl px-4 text-center">
-          <h1 className="mb-4 text-3xl font-bold md:text-5xl">
-            전문가에게 맡기세요
-          </h1>
-          <p className="mb-8 text-lg text-muted-foreground">
-            디자인, 개발, 마케팅 등 비즈니스에 필요한 모든 전문 서비스
-          </p>
-          <div className="mx-auto max-w-xl">
-            <ServiceSearchBar placeholder="어떤 서비스가 필요하세요?" />
-          </div>
-        </div>
-      </section>
+      <HeroBanner />
 
       {/* Categories */}
       <section className="py-12">
