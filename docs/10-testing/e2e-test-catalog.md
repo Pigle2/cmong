@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **238개 단위 테스트** + **99개 시나리오 테스트** = **337개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **254개 단위 테스트** + **99개 시나리오 테스트** = **353개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -459,7 +459,41 @@ npx playwright test -g "A-1"
 
 ---
 
-### 18. `full-scenario.spec.ts` — 통합 시나리오 (99개)
+### 19. `service-filters.spec.ts` — 서비스 필터 바 확장 (9개)
+
+> 배포 전 기능(가격/작업일/평점 Select)은 자동 스킵 처리. FLT-4, FLT-9는 배포 여부 무관하게 항상 실행.
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| FLT-1 | 가격 범위 필터 Select 표시 | - | 사이드바 Select + '가격' 헤딩 |
+| FLT-2 | 작업일 필터 Select 표시 | - | 사이드바 Select + '작업일' 헤딩 |
+| FLT-3 | 평점 필터 Select 표시 | - | 사이드바 Select + '평점' 헤딩 |
+| FLT-4 | 검색 결과 건수 표시 | - | "서비스" 또는 "건" 텍스트 존재 |
+| FLT-5 | 가격 필터 → URL maxPrice 반영 | - | ~50,000원 선택 → maxPrice= |
+| FLT-6 | 작업일 필터 → URL workDays 반영 | - | 3일 이내 선택 → workDays=3 |
+| FLT-7 | 평점 필터 → URL minRating 반영 | - | 4.0 이상 선택 → minRating=4 |
+| FLT-8 | 필터 초기화 버튼 동작 | - | 초기화 클릭 → 파라미터 제거 |
+| FLT-9 | 검색어 후 결과 건수 텍스트 형식 | - | /services?q=디자인 → 건/서비스 텍스트 |
+
+---
+
+### 20. `category-dropdown.spec.ts` — GNB 카테고리 드롭다운 (7개)
+
+> 배포 전 기능(헤더 카테고리 버튼)은 자동 스킵 처리.
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| CAT-1 | 헤더에 "카테고리" 버튼 존재 | - | GNB nav 카테고리 버튼 표시 |
+| CAT-2 | 카테고리 버튼 클릭 → 드롭다운 열림 | - | role="menu" 표시 |
+| CAT-3 | 드롭다운에 카테고리 항목 표시 | - | role="menuitem" 1개 이상 |
+| CAT-4 | 항목 클릭 → /services?category= 이동 | - | slug URL 라우팅 |
+| CAT-5 | /services 페이지 헤더에도 표시 | - | 서비스 목록 페이지에서도 버튼 존재 |
+| CAT-6 | 카테고리 버튼에 ChevronDown SVG 포함 | - | 아이콘 SVG 존재 확인 |
+| CAT-7 | 드롭다운 외부 클릭 시 닫힘 | - | body 클릭 → 메뉴 비표시 |
+
+---
+
+### 21. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
 `full-scenario.spec.ts`는 단위 파일들과 동일한 테스트 ID를 사용하며, 하나의 파일에서 전체 시나리오를 순차 실행.
@@ -488,6 +522,8 @@ npx playwright test -g "A-1"
 | 리뷰 API 보안 | review-data-api.spec.ts | 8 | review-data API route 인증/UUID/소유권 검증 |
 | 이미지 갤러리 | service-detail-gallery.spec.ts | 3 | 갤러리 영역/화살표 버튼/인덱스 전환 |
 | 카드 작업일 | service-card-workdays.spec.ts | 2 | "N일 이내" 형식 표시 검증 |
+| 서비스 필터 바 | service-filters.spec.ts | 9 | 가격/작업일/평점 Select + 건수 표시 + 초기화 |
+| GNB 카테고리 드롭다운 | category-dropdown.spec.ts | 7 | 헤더 카테고리 드롭다운 UI/라우팅 |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -512,4 +548,6 @@ npx playwright test -g "A-1"
 | 리뷰 데이터 API route 보안 | `review-data-api.spec.ts` |
 | 서비스 상세 이미지 갤러리 | `service-detail-gallery.spec.ts` |
 | 서비스 카드 작업일 표시 | `service-card-workdays.spec.ts` |
+| 서비스 필터 바 (가격/작업일/평점/건수) | `service-filters.spec.ts` |
+| GNB 카테고리 드롭다운 | `category-dropdown.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |

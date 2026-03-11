@@ -8,6 +8,7 @@ import { UserMenu } from '@/components/features/auth/user-menu'
 import { ModeToggle } from '@/components/features/auth/mode-toggle'
 import { NotificationBell } from '@/components/features/notification/notification-bell'
 import { Search, MessageSquare } from 'lucide-react'
+import { CategoryDropdown } from '@/components/layout/category-dropdown'
 
 export function Header() {
   const { user, loading } = useUser()
@@ -21,6 +22,7 @@ export function Header() {
             크몽
           </Link>
           <nav className="hidden items-center gap-4 md:flex">
+            <CategoryDropdown />
             <Link
               href="/services"
               className="text-sm text-muted-foreground hover:text-foreground"

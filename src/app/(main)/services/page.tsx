@@ -20,6 +20,21 @@ export default async function ServicesPage({ searchParams }: Props) {
   const sortParam = (searchParams.sort as string) || 'recommended'
   const sort = ALLOWED_SORTS.includes(sortParam) ? sortParam : 'recommended'
   const page = Math.max(1, parseInt((searchParams.page as string) || '1') || 1)
+
+  // 가격 필터 파라미터 검증 (정수, 0 이상)
+  const rawMinPrice = parseInt((searchParams.minPrice as string) || '')
+  const rawMaxPrice = parseInt((searchParams.maxPrice as string) || '')
+  const minPrice = !isNaN(rawMinPrice) && rawMinPrice >= 0 ? rawMinPrice : null
+  const maxPrice = !isNaN(rawMaxPrice) && rawMaxPrice >= 0 ? rawMaxPrice : null
+
+  // 작업일 필터 파라미터 검증 (정수, 1 이상)
+  const rawWorkDays = parseInt((searchParams.workDays as string) || '')
+  const workDays = !isNaN(rawWorkDays) && rawWorkDays >= 1 ? rawWorkDays : null
+
+  // 평점 필터 파라미터 검증 (소수, 0~5 범위)
+  const rawMinRating = parseFloat((searchParams.minRating as string) || '')
+  const minRating = !isNaN(rawMinRating) && rawMinRating >= 0 && rawMinRating <= 5 ? rawMinRating : null
+
   let query = supabase
     .from('services')
     .select(
@@ -48,6 +63,11 @@ export default async function ServicesPage({ searchParams }: Props) {
     }
   }
 
+  // 평점 필터는 services 테이블 컬럼이므로 DB 쿼리에서 처리
+  if (minRating !== null) {
+    query = query.gte('avg_rating', minRating)
+  }
+
   switch (sort) {
     case 'newest':
       query = query.order('created_at', { ascending: false })
@@ -64,30 +84,62 @@ export default async function ServicesPage({ searchParams }: Props) {
       query = query.order('order_count', { ascending: false }).order('avg_rating', { ascending: false })
   }
 
-  const from = (page - 1) * ITEMS_PER_PAGE
-  query = query.range(from, from + ITEMS_PER_PAGE - 1)
+  // 가격/작업일 필터가 있을 때는 전체를 가져와서 클라이언트에서 필터링 후 페이지네이션
+  // 해당 필터가 없을 때만 DB 레벨 페이지네이션 적용
+  const hasPkgFilter = minPrice !== null || maxPrice !== null || workDays !== null
+  if (!hasPkgFilter) {
+    const from = (page - 1) * ITEMS_PER_PAGE
+    query = query.range(from, from + ITEMS_PER_PAGE - 1)
+  }
 
   const [{ data: rawServices, count }, { data: categories }] = await Promise.all([
     query,
     supabase.from('categories').select('*').eq('depth', 0).order('sort_order'),
   ])
-  const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE)
+
+  // 패키지 기준 필터링 (가격/작업일)
+  function getStandardPrice(service: any): number {
+    const packages = service.packages || []
+    const standardPkg = packages.find((p: any) => p.tier === 'STANDARD')
+    if (standardPkg) return standardPkg.price ?? Infinity
+    const prices = packages.map((p: any) => p.price).filter((p: any) => p != null)
+    return prices.length > 0 ? Math.min(...prices) : Infinity
+  }
+
+  function getMinWorkDays(service: any): number {
+    const packages = service.packages || []
+    const days = packages.map((p: any) => p.work_days).filter((d: any) => d != null && d > 0)
+    return days.length > 0 ? Math.min(...days) : Infinity
+  }
+
+  let services = rawServices || []
+
+  if (minPrice !== null) {
+    services = services.filter((s: any) => getStandardPrice(s) >= minPrice)
+  }
+  if (maxPrice !== null) {
+    services = services.filter((s: any) => getStandardPrice(s) <= maxPrice)
+  }
+  if (workDays !== null) {
+    services = services.filter((s: any) => getMinWorkDays(s) <= workDays)
+  }
 
   // 가격 정렬: STANDARD 패키지(또는 최저가 패키지)의 price 기준
-  let services = rawServices
-  if (services && (sort === 'price_asc' || sort === 'price_desc')) {
-    const getMinPrice = (service: any) => {
-      const packages = service.packages || []
-      const standardPkg = packages.find((p: any) => p.tier === 'STANDARD')
-      if (standardPkg) return standardPkg.price ?? Infinity
-      const prices = packages.map((p: any) => p.price).filter((p: any) => p != null)
-      return prices.length > 0 ? Math.min(...prices) : Infinity
-    }
+  if (sort === 'price_asc' || sort === 'price_desc') {
     services = [...services].sort((a: any, b: any) => {
-      const priceA = getMinPrice(a)
-      const priceB = getMinPrice(b)
+      const priceA = getStandardPrice(a)
+      const priceB = getStandardPrice(b)
       return sort === 'price_asc' ? priceA - priceB : priceB - priceA
     })
+  }
+
+  // 패키지 필터가 있을 때는 필터링 후 건수/페이지네이션 처리
+  const filteredCount = hasPkgFilter ? services.length : (count || 0)
+  const totalPages = Math.ceil(filteredCount / ITEMS_PER_PAGE)
+
+  if (hasPkgFilter) {
+    const from = (page - 1) * ITEMS_PER_PAGE
+    services = services.slice(from, from + ITEMS_PER_PAGE)
   }
 
   return (
@@ -100,13 +152,27 @@ export default async function ServicesPage({ searchParams }: Props) {
             categories={categories || []}
             selectedCategory={category}
             selectedSort={sort}
+            selectedMinPrice={minPrice !== null ? String(minPrice) : ''}
+            selectedMaxPrice={maxPrice !== null ? String(maxPrice) : ''}
+            selectedWorkDays={workDays !== null ? String(workDays) : ''}
+            selectedMinRating={minRating !== null ? String(minRating) : ''}
+            searchQuery={rawQ}
           />
         </aside>
 
         <div className="flex-1">
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              총 <span className="font-medium text-foreground">{count || 0}</span>개의 서비스
+              {rawQ ? (
+                <>
+                  &ldquo;<span className="font-medium text-foreground">{rawQ}</span>&rdquo; 검색결과{' '}
+                  <span className="font-medium text-foreground">{filteredCount}</span>건
+                </>
+              ) : (
+                <>
+                  총 <span className="font-medium text-foreground">{filteredCount}</span>개의 서비스
+                </>
+              )}
             </p>
           </div>
 
@@ -133,9 +199,13 @@ export default async function ServicesPage({ searchParams }: Props) {
                 <a
                   key={p}
                   href={`/services?${new URLSearchParams({
-                    ...(q && { q }),
+                    ...(rawQ && { q: rawQ }),
                     ...(category && { category }),
-                    ...(sort && { sort }),
+                    ...(sort !== 'recommended' && { sort }),
+                    ...(minPrice !== null && { minPrice: String(minPrice) }),
+                    ...(maxPrice !== null && { maxPrice: String(maxPrice) }),
+                    ...(workDays !== null && { workDays: String(workDays) }),
+                    ...(minRating !== null && { minRating: String(minRating) }),
                     page: p.toString(),
                   }).toString()}`}
                   className={`flex h-9 w-9 items-center justify-center rounded-md text-sm ${
