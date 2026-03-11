@@ -66,13 +66,23 @@ export function ChatRoomList({
                   <span className="text-sm font-medium">
                     {room.other_user?.nickname || '알 수 없음'}
                   </span>
-                  {room.last_message && (
-                    <span className="text-xs text-muted-foreground">
-                      {formatRelativeTime(room.last_message.created_at)}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {room.unread_count > 0 && (
+                      <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                        {room.unread_count > 99 ? '99+' : room.unread_count}
+                      </span>
+                    )}
+                    {room.last_message && (
+                      <span className="text-xs text-muted-foreground">
+                        {formatRelativeTime(room.last_message.created_at)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className={cn(
+                  'truncate text-xs',
+                  room.unread_count > 0 ? 'font-medium text-foreground' : 'text-muted-foreground'
+                )}>
                   {room.last_message?.content || '대화를 시작하세요'}
                 </p>
               </div>

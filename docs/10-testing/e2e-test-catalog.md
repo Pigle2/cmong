@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **356개 단위 테스트** + **99개 시나리오 테스트** = **455개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **367개 단위 테스트** + **99개 시나리오 테스트** = **466개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -769,6 +769,38 @@ npx playwright test -g "A-1"
 
 ---
 
+### 42. `order-detail-back.spec.ts` — 주문 상세 뒤로가기 (3개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| ODET-1 | 주문 상세 페이지에 주문 내역 링크 표시 | BUYER | /orders 뒤로가기 링크 + href 검증 |
+| ODET-2 | 주문 상세 페이지에 주문번호 표시 | BUYER | 주문 상세 제목 + 주문번호 |
+| ODET-3 | 비인증 사용자 주문 상세 접근 시 리다이렉트 | - | /orders/uuid → /login 리다이렉트 |
+
+---
+
+### 43. `footer-links.spec.ts` — 푸터 링크 (5개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| FOOT-1 | 푸터에 고객지원 섹션 링크 3개 표시 | - | FAQ/이용약관/개인정보 링크 존재 |
+| FOOT-2 | 자주 묻는 질문 링크가 /faq로 연결 | - | href="/faq" 검증 |
+| FOOT-3 | 이용약관 링크가 /terms로 연결 | - | href="/terms" 검증 |
+| FOOT-4 | 개인정보처리방침 링크가 /privacy로 연결 | - | href="/privacy" 검증 |
+| FOOT-5 | FAQ 페이지 접근 시 제목 표시 | - | /faq 페이지 제목 검증 |
+
+---
+
+### 44. `chat-unread-badge.spec.ts` — 채팅 읽지 않은 메시지 배지 (3개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| CUNR-1 | 채팅방 목록에 메시지 헤더 표시 | BUYER | "메시지" 헤더 텍스트 |
+| CUNR-2 | 채팅방이 없을 때 안내 메시지 표시 | BUYER | "대화가 없습니다" 또는 채팅방 존재 |
+| CUNR-3 | 비인증 사용자 채팅 접근 시 리다이렉트 | - | /chat → /login 리다이렉트 |
+
+---
+
 ### 27. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
@@ -819,6 +851,9 @@ npx playwright test -g "A-1"
 | 판매자 네비게이션 | seller-nav.spec.ts | 3 | 7개 사이드바 항목/정산링크/통계링크 |
 | 리뷰 필터/정렬 | review-filter-sort.spec.ts | 6 | 평점 필터 버튼/정렬 드롭다운/필터링 동작 |
 | 구매자 주문 상태 탭 | buyer-orders-tabs.spec.ts | 6 | 전체/진행중/완료/취소 탭/건수/비인증 |
+| 주문 상세 뒤로가기 | order-detail-back.spec.ts | 3 | 뒤로가기 링크/주문번호 표시/비인증 |
+| 푸터 링크 | footer-links.spec.ts | 5 | 고객지원 링크 3개/href 검증/FAQ 페이지 |
+| 채팅 읽지않음 배지 | chat-unread-badge.spec.ts | 3 | 메시지 헤더/빈 채팅방/비인증 |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -855,4 +890,7 @@ npx playwright test -g "A-1"
 | 패키지 탭 UI + 판매자 응답률 텍스트 | `package-tabs.spec.ts` |
 | 알림 팝오버 탭 필터 (전체/주문/메시지/시스템) | `notification-tabs.spec.ts` |
 | 견적 요청 페이지 (/quote) | `quote-page.spec.ts` |
+| 주문 상세 뒤로가기/주문번호 | `order-detail-back.spec.ts` |
+| 푸터 고객지원 링크 | `footer-links.spec.ts` |
+| 채팅 읽지 않은 메시지 배지 | `chat-unread-badge.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |

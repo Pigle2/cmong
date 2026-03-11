@@ -32,13 +32,19 @@ export function Footer() {
             <h4 className="mb-3 text-sm font-semibold">고객지원</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <span className="hover:text-foreground">자주 묻는 질문</span>
+                <Link href="/faq" className="hover:text-foreground">
+                  자주 묻는 질문
+                </Link>
               </li>
               <li>
-                <span className="hover:text-foreground">이용약관</span>
+                <Link href="/terms" className="hover:text-foreground">
+                  이용약관
+                </Link>
               </li>
               <li>
-                <span className="hover:text-foreground">개인정보처리방침</span>
+                <Link href="/privacy" className="hover:text-foreground">
+                  개인정보처리방침
+                </Link>
               </li>
             </ul>
           </div>

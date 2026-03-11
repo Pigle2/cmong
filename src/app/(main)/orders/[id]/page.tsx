@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { ORDER_STATUS, ORDER_STATUS_COLORS, PACKAGE_TIER_LABELS } from '@/lib/constants'
 import { formatPrice, formatDate } from '@/lib/utils'
 import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 interface Props {
   params: { id: string }
@@ -63,6 +64,15 @@ export default async function OrderDetailPage({ params }: Props) {
     <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
+          <div className="mb-2 flex items-center gap-2">
+            <Link
+              href="/orders"
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              주문 내역
+            </Link>
+          </div>
           <h1 className="text-2xl font-bold">주문 상세</h1>
           <p className="text-sm text-muted-foreground">{order.order_number}</p>
         </div>
