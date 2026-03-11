@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **220개 단위 테스트** + **99개 시나리오 테스트** = **319개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **233개 단위 테스트** + **99개 시나리오 테스트** = **332개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -409,7 +409,34 @@ npx playwright test -g "A-1"
 
 ---
 
-### 13. `full-scenario.spec.ts` — 통합 시나리오 (99개)
+### 13. `order-new-api.spec.ts` — 주문 페이지 API route 검증 (5개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| ORD-API-1 | 쿼리 파라미터 없이 접근 시 로딩 상태 표시 | BUYER | serviceId 없을 때 로딩 메시지 |
+| ORD-API-2 | 유효한 serviceId로 접근 시 /api/services/ 요청 발생 | BUYER | 클라이언트가 API route 사용 검증 (배포 감지) |
+| ORD-API-3 | 존재하지 않는 serviceId → 에러 토스트 + 홈 리다이렉트 | BUYER | API 404 → 홈으로 이동 |
+| ORD-API-4 | 비로그인 접근 시 리다이렉트 | - | 미들웨어 인증 가드 |
+| ORD-API-5 | /api/services/:id API ACTIVE 서비스 반환 확인 | BUYER | 상태/패키지 포함 응답 검증 |
+
+---
+
+### 14. `review-data-api.spec.ts` — 리뷰 데이터 API route 보안 검증 (8개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| RVW-API-1 | 비로그인 접근 시 401 반환 | - | UNAUTHORIZED 코드 검증 |
+| RVW-API-2 | 잘못된 UUID 형식 → 400 또는 401 (500 아님) | - | UUID 검증 + 인증 검증 |
+| RVW-API-3 | 로그인 후 잘못된 UUID 형식 → 400 | BUYER | BAD_REQUEST + 유효하지 않은 메시지 |
+| RVW-API-4 | 로그인 후 존재하지 않는 UUID → 404 | BUYER | NOT_FOUND 코드 검증 |
+| RVW-API-5 | 판매자가 타인 주문 접근 → 403 또는 404 | SELLER | 소유권 검증 |
+| RVW-API-6 | 에러 응답 형식 { success, error: { code, message } } | - | 표준 에러 구조 + DB 정보 미노출 |
+| RVW-API-7 | 리뷰 페이지가 review-data API 통해 조회 (네트워크 확인) | BUYER | 클라이언트 API route 사용 검증 |
+| RVW-API-8 | 특수문자 ID 처리 (SQL 인젝션 방지) | BUYER | 500 아님, 400/404 반환 |
+
+---
+
+### 15. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
 `full-scenario.spec.ts`는 단위 파일들과 동일한 테스트 ID를 사용하며, 하나의 파일에서 전체 시나리오를 순차 실행.
@@ -434,6 +461,8 @@ npx playwright test -g "A-1"
 | 모바일 | mobile.spec.ts | 11 | 반응형 + 엣지케이스 |
 | 버그수정 | bugfix-verification.spec.ts | 12 | API/UI 버그 수정 검증 |
 | 신규기능 | new-features.spec.ts | 35 | 설정개선/모드전환/판매자주문상세/주문취소/납품/자동확정 |
+| 주문 API 보안 | order-new-api.spec.ts | 5 | 주문 페이지 클라이언트→API route 전환 검증 |
+| 리뷰 API 보안 | review-data-api.spec.ts | 8 | review-data API route 인증/UUID/소유권 검증 |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -454,4 +483,6 @@ npx playwright test -g "A-1"
 | 에러 처리 | `error.spec.ts` |
 | 모바일/반응형 | `mobile.spec.ts` |
 | 설정/모드전환/주문취소/납품/자동확정 | `new-features.spec.ts` |
+| 주문 페이지 클라이언트→API 전환 | `order-new-api.spec.ts` |
+| 리뷰 데이터 API route 보안 | `review-data-api.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |
