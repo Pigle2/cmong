@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **271개 단위 테스트** + **99개 시나리오 테스트** = **370개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **280개 단위 테스트** + **99개 시나리오 테스트** = **379개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -555,6 +555,33 @@ npx playwright test -g "A-1"
 
 ---
 
+### 28. `mypage-enhancements.spec.ts` — 마이페이지 UI 개선 (5개)
+
+> 진행중/완료 분리 배포 전에는 MY-ENH-1~4 자동 스킵. MY-ENH-5는 항상 실행 (배포 버전 무관).
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| MY-ENH-1 | 마이페이지에 "진행중" 주문 수가 표시됨 | BUYER | 진행중 카드 숫자 표시 확인 (미배포 시 스킵) |
+| MY-ENH-2 | 마이페이지에 "완료" 주문 수가 표시됨 | BUYER | 완료 카드 숫자 표시 확인 (미배포 시 스킵) |
+| MY-ENH-3 | 진행중/완료 별도 카드로 분리 표시 | BUYER | grid-cols-4 카드 4개 (미배포 시 스킵) |
+| MY-ENH-4 | 판매자 등급 배지 표시 | SELLER | sellerProfile.grade 있을 때 Badge 렌더링 (등급 없으면 스킵) |
+| MY-ENH-5 | 마이페이지 기본 구조 접근 가능 | BUYER | 닉네임/찜/리뷰/최근주문 항상 확인 |
+
+---
+
+### 29. `popular-experts.spec.ts` — 메인 페이지 인기 전문가 섹션 (4개)
+
+> seller_profiles 데이터가 없거나 미배포 시 EXP-1~4 자동 스킵.
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| EXP-1 | 메인 페이지에 "인기 전문가" 섹션이 표시됨 | - | h2 "인기 전문가" 헤딩 표시 확인 |
+| EXP-2 | 인기 전문가 섹션에 카드 표시 (프로필/닉네임) | - | /sellers/{uuid} 링크 + p.font-semibold 닉네임 |
+| EXP-3 | 전문가 카드에 등급 배지와 평점이 표시됨 | - | Badge(등급) + 평점 숫자(0~5) |
+| EXP-4 | 전문가 카드 링크 형식 검증 | - | href=/sellers/{UUID} 패턴 확인 |
+
+---
+
 ### 27. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
@@ -591,6 +618,8 @@ npx playwright test -g "A-1"
 | 관련 서비스 섹션 | related-services.spec.ts | 2 | 서비스 상세 하단 동일 카테고리 4개 그리드 (데이터 의존 스킵) |
 | 히어로 배너 슬라이더 | hero-banner.spec.ts | 5 | 메인 3개 배너/화살표/dot/검색바 (미배포 시 HERO-1~4 스킵) |
 | 주문 프로그레스 바 | order-progress.spec.ts | 2 | 주문 상세 5단계 바 + 취소 메시지 (미배포 시 스킵) |
+| 마이페이지 UI 개선 | mypage-enhancements.spec.ts | 5 | 진행중/완료 분리/판매자 등급 배지 (미배포 시 스킵) |
+| 인기 전문가 섹션 | popular-experts.spec.ts | 4 | 메인 전문가 카드/닉네임/배지/평점/링크 (미배포 시 스킵) |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -622,4 +651,6 @@ npx playwright test -g "A-1"
 | 서비스 상세 관련 서비스 섹션 | `related-services.spec.ts` |
 | 히어로 배너 슬라이더 | `hero-banner.spec.ts` |
 | 주문 프로그레스 바 | `order-progress.spec.ts` |
+| 마이페이지 진행중/완료 분리 + 판매자 등급 배지 | `mypage-enhancements.spec.ts` |
+| 메인 페이지 인기 전문가 섹션 | `popular-experts.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |

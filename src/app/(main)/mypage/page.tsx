@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { ORDER_STATUS, ORDER_STATUS_COLORS } from '@/lib/constants'
+import { ORDER_STATUS, ORDER_STATUS_COLORS, SELLER_GRADES } from '@/lib/constants'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { Package, Heart, Star, Settings } from 'lucide-react'
 
@@ -23,6 +23,12 @@ export default async function MyPage() {
     .eq('id', user.id)
     .single()
 
+  const { data: sellerProfile } = await supabase
+    .from('seller_profiles')
+    .select('grade')
+    .eq('user_id', user.id)
+    .single()
+
   const { data: recentOrders } = await supabase
     .from('orders')
     .select('*, service:services(title, thumbnail_url)')
@@ -30,10 +36,14 @@ export default async function MyPage() {
     .order('created_at', { ascending: false })
     .limit(5)
 
-  const { count: orderCount } = await supabase
+  const { data: allOrders } = await supabase
     .from('orders')
-    .select('*', { count: 'exact', head: true })
+    .select('status')
     .eq('buyer_id', user.id)
+
+  const ACTIVE_STATUSES = ['PAID', 'ACCEPTED', 'IN_PROGRESS', 'DELIVERED', 'REVISION_REQUESTED']
+  const activeOrderCount = allOrders?.filter((o) => ACTIVE_STATUSES.includes(o.status)).length ?? 0
+  const completedOrderCount = allOrders?.filter((o) => o.status === 'COMPLETED').length ?? 0
 
   const { count: favoriteCount } = await supabase
     .from('favorites')
@@ -55,7 +65,14 @@ export default async function MyPage() {
             <AvatarFallback className="text-lg">{profile?.nickname?.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h1 className="text-xl font-bold">{profile?.nickname}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold">{profile?.nickname}</h1>
+              {sellerProfile?.grade && (
+                <Badge variant="secondary" className="text-xs">
+                  {SELLER_GRADES[sellerProfile.grade as keyof typeof SELLER_GRADES] ?? sellerProfile.grade}
+                </Badge>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground">{profile?.email}</p>
             {profile?.bio && <p className="mt-1 text-sm">{profile.bio}</p>}
           </div>
@@ -69,13 +86,22 @@ export default async function MyPage() {
       </Card>
 
       {/* Stats */}
-      <div className="mb-8 grid grid-cols-3 gap-4">
+      <div className="mb-8 grid grid-cols-4 gap-4">
         <Link href="/orders">
           <Card className="text-center transition-shadow hover:shadow-md">
             <CardContent className="p-4">
               <Package className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
-              <div className="text-2xl font-bold">{orderCount || 0}</div>
-              <div className="text-xs text-muted-foreground">주문</div>
+              <div className="text-2xl font-bold">{activeOrderCount}</div>
+              <div className="text-xs text-muted-foreground">진행중</div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/orders">
+          <Card className="text-center transition-shadow hover:shadow-md">
+            <CardContent className="p-4">
+              <Package className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
+              <div className="text-2xl font-bold">{completedOrderCount}</div>
+              <div className="text-xs text-muted-foreground">완료</div>
             </CardContent>
           </Card>
         </Link>

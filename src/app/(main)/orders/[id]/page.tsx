@@ -50,6 +50,12 @@ export default async function OrderDetailPage({ params }: Props) {
     .eq('order_id', order.id)
     .single()
 
+  const { count: usedRevisionCount } = await supabase
+    .from('order_status_history')
+    .select('*', { count: 'exact', head: true })
+    .eq('order_id', order.id)
+    .eq('to_status', 'REVISION_REQUESTED')
+
   const isBuyer = order.buyer_id === user.id
   const isSeller = order.seller_id === user.id
 
@@ -154,7 +160,9 @@ export default async function OrderDetailPage({ params }: Props) {
               <Separator />
               <div className="flex justify-between">
                 <span className="text-muted-foreground">수정 횟수</span>
-                <span>{order.package?.revision_count}회</span>
+                <span>
+                  {usedRevisionCount ?? 0}/{order.package?.revision_count ?? 0}회 사용
+                </span>
               </div>
               <Separator />
               <div className="flex justify-between font-medium">

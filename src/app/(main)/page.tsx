@@ -4,10 +4,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { ServiceCard } from '@/components/features/service/service-card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { HeroBanner } from '@/components/features/home/hero-banner'
+import { SELLER_GRADES } from '@/lib/constants'
 import {
   Palette, Code, Video, Megaphone, Languages,
-  FileText, Briefcase, Hammer, GraduationCap, Scale,
+  FileText, Briefcase, Hammer, GraduationCap, Scale, Star,
 } from 'lucide-react'
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -26,7 +29,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 export default async function HomePage() {
   const supabase = await createClient()
 
-  const [{ data: categories }, { data: popularServices }, { data: newServices }] = await Promise.all([
+  const [{ data: categories }, { data: popularServices }, { data: newServices }, { data: topSellers }] = await Promise.all([
     supabase
       .from('categories')
       .select('*')
@@ -44,6 +47,11 @@ export default async function HomePage() {
       .eq('status', 'ACTIVE')
       .order('created_at', { ascending: false })
       .limit(8),
+    supabase
+      .from('seller_profiles')
+      .select('grade, avg_rating, display_name, user_id, profile:profiles!user_id(nickname, avatar_url)')
+      .order('avg_rating', { ascending: false })
+      .limit(4),
   ])
 
   return (
@@ -105,6 +113,44 @@ export default async function HomePage() {
               {newServices.map((service: any) => (
                 <ServiceCard key={service.id} service={service} />
               ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Top Sellers */}
+      {topSellers && topSellers.length > 0 && (
+        <section className="py-12 bg-muted/30">
+          <div className="mx-auto max-w-7xl px-4">
+            <h2 className="mb-8 text-center text-2xl font-bold">인기 전문가</h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {topSellers.map((seller: any) => {
+                const profile = Array.isArray(seller.profile) ? seller.profile[0] : seller.profile
+                return (
+                  <Link
+                    key={seller.user_id}
+                    href={`/sellers/${seller.user_id}`}
+                    className="flex flex-col items-center gap-3 rounded-xl border bg-background p-6 text-center transition-shadow hover:shadow-md"
+                  >
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage src={profile?.avatar_url || undefined} />
+                      <AvatarFallback className="text-lg">
+                        {(profile?.nickname ?? seller.display_name)?.slice(0, 2)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <p className="font-semibold">{profile?.nickname ?? seller.display_name}</p>
+                      <Badge variant="secondary" className="text-xs">
+                        {SELLER_GRADES[seller.grade as keyof typeof SELLER_GRADES] ?? seller.grade}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                      <span>{Number(seller.avg_rating).toFixed(1)}</span>
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </section>
