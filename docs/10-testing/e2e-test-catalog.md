@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **213개 단위 테스트** + **99개 시나리오 테스트** = **312개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **220개 단위 테스트** + **99개 시나리오 테스트** = **319개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -63,7 +63,21 @@ npx playwright test -g "A-1"
 
 ---
 
-### 2. `service.spec.ts` — 서비스 (22개)
+### 2. `search.spec.ts` — 메인 페이지 검색 (7개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| SRCH-1 | 메인 페이지 검색 입력 필드 존재 | - | Hero 섹션 input + 검색 버튼 |
+| SRCH-2 | 검색어 입력 후 Enter → /services?q=검색어 | - | 라우팅 및 URL 파라미터 검증 |
+| SRCH-3 | 검색 버튼 클릭 → /services?q=검색어 | - | 버튼 클릭 라우팅 검증 |
+| SRCH-4 | 빈 검색어 제출 → /services (q 없이) | - | 빈 query → q 파라미터 미포함 |
+| SRCH-5 | /services 페이지 검색바 동작 | - | 검색바 재검색 + URL 업데이트 |
+| SRCH-6 | /services?q=기존검색어 → 검색바에 값 채워짐 | - | defaultValue prop 동작 |
+| SRCH-7 | 검색 후 재검색 → URL 업데이트 | - | 두 번째 검색어로 URL 변경 확인 |
+
+---
+
+### 3. `service.spec.ts` — 서비스 (20개)
 
 | ID | 테스트 | 로그인 | 설명 |
 |----|--------|:------:|------|
@@ -407,6 +421,7 @@ npx playwright test -g "A-1"
 | 도메인 | 파일 | 테스트 수 | 주요 범위 |
 |--------|------|:---------:|-----------|
 | 인증 | auth.spec.ts | 25 | 로그인/가입/로그아웃/설정/모드전환 |
+| 메인 검색 | search.spec.ts | 7 | Hero 검색바/Enter/버튼/빈값/rehydration |
 | 서비스 | service.spec.ts | 20 | 홈/검색/상세/CRUD/필터 |
 | 주문 | order.spec.ts | 14 | 목록/생성/상태전이/거절/수정요청 |
 | 채팅 | chat.spec.ts | 6 | 기본채팅 + 실시간(RT) |
@@ -428,6 +443,7 @@ npx playwright test -g "A-1"
 | 변경 영역 | 실행할 테스트 |
 |-----------|-------------|
 | 인증/로그인/가입 | `auth.spec.ts` |
+| 메인 페이지 검색바 | `search.spec.ts` |
 | 서비스 검색/필터/CRUD | `service.spec.ts` |
 | 주문 플로우 | `order.spec.ts` |
 | 채팅 | `chat.spec.ts`, `chat-leave.spec.ts` |
