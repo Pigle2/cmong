@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -15,7 +14,6 @@ import { PACKAGE_TIER_LABELS } from '@/lib/constants'
 export default function NewOrderClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = createClient()
 
   const serviceId = searchParams.get('service')
   const packageId = searchParams.get('package')
@@ -28,15 +26,17 @@ export default function NewOrderClient() {
   useEffect(() => {
     const load = async () => {
       if (!serviceId) return
-      const { data } = await supabase
-        .from('services')
-        .select('*, packages:service_packages(*), seller:profiles!seller_id(nickname)')
-        .eq('id', serviceId)
-        .single()
-      if (data) {
-        setService(data)
+      const res = await fetch(`/api/services/${serviceId}`)
+      if (!res.ok) {
+        toast({ title: '서비스를 찾을 수 없습니다', variant: 'destructive' })
+        router.push('/')
+        return
+      }
+      const json = await res.json()
+      if (json.success && json.data) {
+        setService(json.data)
         if (packageId) {
-          const p = data.packages?.find((p: any) => p.id === packageId)
+          const p = json.data.packages?.find((p: any) => p.id === packageId)
           setPkg(p)
         }
       }
@@ -47,12 +47,9 @@ export default function NewOrderClient() {
   const handleOrder = async () => {
     if (!service || !pkg) return
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
-
     setLoading(true)
 
-    // 주문 생성은 API Route를 통해 처리 — 서버에서 price/seller_id 검증
+    // 주문 생성은 API Route를 통해 처리 — 서버에서 price/seller_id 검증 및 인증 확인
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,6 +59,11 @@ export default function NewOrderClient() {
         requirements: requirements.trim() || null,
       }),
     })
+
+    if (res.status === 401) {
+      router.push('/login')
+      return
+    }
 
     const json = await res.json()
 

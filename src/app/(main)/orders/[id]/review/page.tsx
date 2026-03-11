@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -13,7 +12,6 @@ import { toast } from '@/hooks/use-toast'
 export default function ReviewPage() {
   const router = useRouter()
   const params = useParams()
-  const supabase = createClient()
 
   const [order, setOrder] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -27,29 +25,27 @@ export default function ReviewPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
-        .from('orders')
-        .select('*, service:services(title)')
-        .eq('id', params.id)
-        .single()
-      if (data?.status !== 'COMPLETED') {
-        router.push(`/orders/${params.id}`)
+      const res = await fetch(`/api/orders/${params.id}/review-data`)
+      const json = await res.json()
+
+      if (res.status === 401) {
+        router.push('/login')
         return
       }
 
-      // 기존 리뷰 존재 여부 확인 (UI 목적 — 실제 중복 방지는 API에서)
-      const { data: existingReview } = await supabase
-        .from('reviews')
-        .select('id')
-        .eq('order_id', params.id)
-        .single()
-      if (existingReview) {
-        toast({ title: '이미 리뷰를 작성하셨습니다' })
-        router.push('/orders')
+      if (!res.ok) {
+        const code = json.error?.code
+        if (code === 'DUPLICATE') {
+          toast({ title: json.error?.message || '이미 리뷰를 작성하셨습니다' })
+          router.push('/orders')
+        } else {
+          // BAD_REQUEST(미완료), FORBIDDEN, NOT_FOUND 등 — 주문 상세로 이동
+          router.push(`/orders/${params.id}`)
+        }
         return
       }
 
-      setOrder(data)
+      setOrder(json.data)
     }
     load()
   }, [params.id])
