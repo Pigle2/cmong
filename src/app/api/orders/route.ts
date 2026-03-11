@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     )
   }
-  const { serviceId, packageId, requirements } = body
+  const { serviceId, packageId, requirements, preferredDueDate } = body
 
   // 입력값 검증
   if (!serviceId || typeof serviceId !== 'string' || !UUID_REGEX.test(serviceId)) {
@@ -98,8 +98,18 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const dueDate = new Date()
-  dueDate.setDate(dueDate.getDate() + pkg.work_days)
+  // 희망 완료일이 있으면 사용, 없으면 작업일 기준 자동 계산
+  let dueDate: Date
+  if (preferredDueDate && typeof preferredDueDate === 'string') {
+    const parsed = new Date(preferredDueDate)
+    const minDate = new Date()
+    minDate.setDate(minDate.getDate() + pkg.work_days)
+    // 희망 완료일이 최소 작업일보다 빠르면 최소 작업일로 보정
+    dueDate = parsed >= minDate ? parsed : minDate
+  } else {
+    dueDate = new Date()
+    dueDate.setDate(dueDate.getDate() + pkg.work_days)
+  }
 
   // 주문 생성 — total_amount와 seller_id는 서버에서 DB 조회 결과로 설정
   const { data: order, error: insertError } = await supabase

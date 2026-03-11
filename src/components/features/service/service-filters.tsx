@@ -21,6 +21,8 @@ interface ServiceFiltersProps {
   selectedMaxPrice: string
   selectedWorkDays: string
   selectedMinRating: string
+  selectedSellerGrade: string
+  selectedMinOrders: string
   searchQuery: string
 }
 
@@ -58,6 +60,21 @@ const RATING_OPTIONS = [
   { value: '4.8', label: '4.8 이상' },
 ]
 
+const SELLER_GRADE_OPTIONS = [
+  { value: 'all', label: '전체' },
+  { value: 'MASTER', label: '마스터' },
+  { value: 'PRO', label: '전문가' },
+  { value: 'GENERAL', label: '일반' },
+  { value: 'NEW', label: '신규' },
+]
+
+const ORDER_COUNT_OPTIONS = [
+  { value: 'all', label: '전체' },
+  { value: '10', label: '10건 이상' },
+  { value: '50', label: '50건 이상' },
+  { value: '100', label: '100건 이상' },
+]
+
 function getPriceValue(minPrice: string, maxPrice: string): string {
   if (!minPrice && !maxPrice) return 'all'
   if (minPrice === '500000' && !maxPrice) return '500000-'
@@ -73,6 +90,8 @@ export function ServiceFilters({
   selectedMaxPrice,
   selectedWorkDays,
   selectedMinRating,
+  selectedSellerGrade,
+  selectedMinOrders,
   searchQuery,
 }: ServiceFiltersProps) {
   const router = useRouter()
@@ -86,6 +105,8 @@ export function ServiceFilters({
     if (selectedMaxPrice) params.set('maxPrice', selectedMaxPrice)
     if (selectedWorkDays) params.set('workDays', selectedWorkDays)
     if (selectedMinRating) params.set('minRating', selectedMinRating)
+    if (selectedSellerGrade) params.set('sellerGrade', selectedSellerGrade)
+    if (selectedMinOrders) params.set('minOrders', selectedMinOrders)
 
     for (const [key, value] of Object.entries(overrides)) {
       if (value === undefined || value === '' || value === 'all') {
@@ -117,6 +138,14 @@ export function ServiceFilters({
     router.push(`/services?${buildParams({ minRating: value === 'all' ? undefined : value })}`)
   }
 
+  function handleSellerGradeChange(value: string) {
+    router.push(`/services?${buildParams({ sellerGrade: value === 'all' ? undefined : value })}`)
+  }
+
+  function handleMinOrdersChange(value: string) {
+    router.push(`/services?${buildParams({ minOrders: value === 'all' ? undefined : value })}`)
+  }
+
   function handleReset() {
     const params = new URLSearchParams()
     if (searchQuery) params.set('q', searchQuery)
@@ -126,6 +155,8 @@ export function ServiceFilters({
   const priceValue = getPriceValue(selectedMinPrice, selectedMaxPrice)
   const workDaysValue = selectedWorkDays || 'all'
   const ratingValue = selectedMinRating || 'all'
+  const sellerGradeValue = selectedSellerGrade || 'all'
+  const minOrdersValue = selectedMinOrders || 'all'
 
   const hasActiveFilters =
     selectedCategory ||
@@ -133,7 +164,9 @@ export function ServiceFilters({
     selectedMinPrice ||
     selectedMaxPrice ||
     selectedWorkDays ||
-    selectedMinRating
+    selectedMinRating ||
+    selectedSellerGrade ||
+    selectedMinOrders
 
   return (
     <div className="space-y-6">
@@ -232,6 +265,38 @@ export function ServiceFilters({
           </SelectTrigger>
           <SelectContent>
             {RATING_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-semibold">판매자 등급</h3>
+        <Select value={sellerGradeValue} onValueChange={handleSellerGradeChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="전체" />
+          </SelectTrigger>
+          <SelectContent>
+            {SELLER_GRADE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-semibold">거래 건수</h3>
+        <Select value={minOrdersValue} onValueChange={handleMinOrdersChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="전체" />
+          </SelectTrigger>
+          <SelectContent>
+            {ORDER_COUNT_OPTIONS.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}
               </SelectItem>

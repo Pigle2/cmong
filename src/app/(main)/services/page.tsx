@@ -40,10 +40,19 @@ export default async function ServicesPage({ searchParams }: Props) {
   const rawMinRating = parseFloat((searchParams.minRating as string) || '')
   const minRating = !isNaN(rawMinRating) && rawMinRating >= 0 && rawMinRating <= 5 ? rawMinRating : null
 
+  // 판매자 등급 필터
+  const ALLOWED_GRADES = ['NEW', 'GENERAL', 'PRO', 'MASTER']
+  const rawSellerGrade = (searchParams.sellerGrade as string) || ''
+  const sellerGrade = ALLOWED_GRADES.includes(rawSellerGrade) ? rawSellerGrade : null
+
+  // 거래 건수 필터
+  const rawMinOrders = parseInt((searchParams.minOrders as string) || '')
+  const minOrders = !isNaN(rawMinOrders) && rawMinOrders >= 0 ? rawMinOrders : null
+
   let query = supabase
     .from('services')
     .select(
-      '*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url)',
+      '*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url), seller_profile:seller_profiles!seller_id(grade)',
       { count: 'exact' }
     )
     .eq('status', 'ACTIVE')
@@ -73,6 +82,11 @@ export default async function ServicesPage({ searchParams }: Props) {
     query = query.gte('avg_rating', minRating)
   }
 
+  // 거래 건수 필터
+  if (minOrders !== null) {
+    query = query.gte('order_count', minOrders)
+  }
+
   switch (sort) {
     case 'newest':
       query = query.order('created_at', { ascending: false })
@@ -89,9 +103,9 @@ export default async function ServicesPage({ searchParams }: Props) {
       query = query.order('order_count', { ascending: false }).order('avg_rating', { ascending: false })
   }
 
-  // 가격/작업일 필터가 있을 때는 전체를 가져와서 클라이언트에서 필터링 후 페이지네이션
+  // 가격/작업일/판매자등급 필터가 있을 때는 전체를 가져와서 클라이언트에서 필터링 후 페이지네이션
   // 해당 필터가 없을 때만 DB 레벨 페이지네이션 적용
-  const hasPkgFilter = minPrice !== null || maxPrice !== null || workDays !== null
+  const hasPkgFilter = minPrice !== null || maxPrice !== null || workDays !== null || sellerGrade !== null
   if (!hasPkgFilter) {
     const from = (page - 1) * ITEMS_PER_PAGE
     query = query.range(from, from + ITEMS_PER_PAGE - 1)
@@ -129,6 +143,14 @@ export default async function ServicesPage({ searchParams }: Props) {
     services = services.filter((s: any) => getMinWorkDays(s) <= workDays)
   }
 
+  // 판매자 등급 필터 (클라이언트 필터링)
+  if (sellerGrade !== null) {
+    services = services.filter((s: any) => {
+      const sp = Array.isArray(s.seller_profile) ? s.seller_profile[0] : s.seller_profile
+      return sp?.grade === sellerGrade
+    })
+  }
+
   // 가격 정렬: STANDARD 패키지(또는 최저가 패키지)의 price 기준
   if (sort === 'price_asc' || sort === 'price_desc') {
     services = [...services].sort((a: any, b: any) => {
@@ -161,6 +183,8 @@ export default async function ServicesPage({ searchParams }: Props) {
             selectedMaxPrice={maxPrice !== null ? String(maxPrice) : ''}
             selectedWorkDays={workDays !== null ? String(workDays) : ''}
             selectedMinRating={minRating !== null ? String(minRating) : ''}
+            selectedSellerGrade={sellerGrade || ''}
+            selectedMinOrders={minOrders !== null ? String(minOrders) : ''}
             searchQuery={rawQ}
           />
         </aside>
@@ -218,6 +242,8 @@ export default async function ServicesPage({ searchParams }: Props) {
                     ...(maxPrice !== null && { maxPrice: String(maxPrice) }),
                     ...(workDays !== null && { workDays: String(workDays) }),
                     ...(minRating !== null && { minRating: String(minRating) }),
+                    ...(sellerGrade && { sellerGrade }),
+                    ...(minOrders !== null && { minOrders: String(minOrders) }),
                     ...(view !== 'grid' && { view }),
                     page: p.toString(),
                   }).toString()}`}

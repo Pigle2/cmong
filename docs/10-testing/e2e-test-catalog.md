@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **374개 단위 테스트** + **99개 시나리오 테스트** = **473개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **384개 단위 테스트** + **99개 시나리오 테스트** = **483개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -822,6 +822,30 @@ npx playwright test -g "A-1"
 
 ---
 
+### 47. `order-form-enhanced.spec.ts` — 주문서 개선 (5개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| OFRM-1 | 희망 완료일 필드 표시 | BUYER | date picker 존재 확인 |
+| OFRM-2 | 요구사항 글자수 카운터 표시 | BUYER | "/5,000자" 카운터 |
+| OFRM-3 | 요구사항 최소 30자 안내 표시 | BUYER | "최소 30자" 라벨 |
+| OFRM-4 | 주문 API 요구사항 길이 검증 | - | 5001자 → 400 |
+| OFRM-5 | 주문 API preferredDueDate 수용 | - | 비인증 → 401 |
+
+---
+
+### 48. `service-advanced-filters.spec.ts` — 서비스 고급 필터 (5개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| AFLT-1 | 판매자 등급 필터 드롭다운 표시 | - | "판매자 등급" 라벨 |
+| AFLT-2 | 거래 건수 필터 드롭다운 표시 | - | "거래 건수" 라벨 |
+| AFLT-3 | 판매자 등급 필터 URL 반영 | - | ?sellerGrade=PRO |
+| AFLT-4 | 거래 건수 필터 URL 반영 | - | ?minOrders=10 |
+| AFLT-5 | 필터 초기화 버튼 전체 해제 | - | 초기화 후 파라미터 제거 |
+
+---
+
 ### 27. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
@@ -877,6 +901,8 @@ npx playwright test -g "A-1"
 | 채팅 읽지않음 배지 | chat-unread-badge.spec.ts | 3 | 메시지 헤더/빈 채팅방/비인증 |
 | 주문 완료 페이지 | order-complete.spec.ts | 4 | 완료 확인/주문번호/다음단계/비인증 |
 | 인기 서비스 순위 | popular-ranking.spec.ts | 3 | TOP 섹션/순위 배지/더보기 링크 |
+| 주문서 개선 | order-form-enhanced.spec.ts | 5 | 희망완료일/글자수카운터/30자검증/API검증 |
+| 서비스 고급 필터 | service-advanced-filters.spec.ts | 5 | 판매자등급/거래건수/URL반영/초기화 |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -918,4 +944,6 @@ npx playwright test -g "A-1"
 | 채팅 읽지 않은 메시지 배지 | `chat-unread-badge.spec.ts` |
 | 주문 완료 페이지 | `order-complete.spec.ts` |
 | 인기 서비스 순위 표시 | `popular-ranking.spec.ts` |
+| 주문서 희망완료일/글자수 검증 | `order-form-enhanced.spec.ts` |
+| 서비스 판매자등급/거래건수 필터 | `service-advanced-filters.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |

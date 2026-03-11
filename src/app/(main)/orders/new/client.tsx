@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/hooks/use-toast'
 import { formatPrice } from '@/lib/utils'
 import { PACKAGE_TIER_LABELS } from '@/lib/constants'
+import { CalendarDays } from 'lucide-react'
 
 export default function NewOrderClient() {
   const router = useRouter()
@@ -21,6 +23,7 @@ export default function NewOrderClient() {
   const [service, setService] = useState<any>(null)
   const [pkg, setPkg] = useState<any>(null)
   const [requirements, setRequirements] = useState('')
+  const [preferredDueDate, setPreferredDueDate] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -44,8 +47,20 @@ export default function NewOrderClient() {
     load()
   }, [serviceId, packageId])
 
+  // 최소 희망 완료일: 오늘 + 작업일
+  const minDueDate = pkg ? (() => {
+    const d = new Date()
+    d.setDate(d.getDate() + (pkg.work_days || 1))
+    return d.toISOString().split('T')[0]
+  })() : ''
+
   const handleOrder = async () => {
     if (!service || !pkg) return
+
+    if (requirements.trim().length > 0 && requirements.trim().length < 30) {
+      toast({ title: '요구사항은 최소 30자 이상 작성해주세요', variant: 'destructive' })
+      return
+    }
 
     setLoading(true)
 
@@ -57,6 +72,7 @@ export default function NewOrderClient() {
         serviceId: service.id,
         packageId: pkg.id,
         requirements: requirements.trim() || null,
+        preferredDueDate: preferredDueDate || null,
       }),
     })
 
@@ -102,10 +118,32 @@ export default function NewOrderClient() {
         </Card>
         <Card>
           <CardHeader><CardTitle className="text-lg">요구사항</CardTitle></CardHeader>
-          <CardContent>
-            <Label htmlFor="requirements">작업 요구사항을 상세히 적어주세요</Label>
-            <Textarea id="requirements" value={requirements} onChange={(e) => setRequirements(e.target.value)}
-              placeholder="원하시는 작업 내용, 참고자료, 스타일 등을 상세히 설명해주세요." rows={6} className="mt-2" />
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="requirements">작업 요구사항을 상세히 적어주세요 (최소 30자)</Label>
+              <Textarea id="requirements" value={requirements} onChange={(e) => setRequirements(e.target.value)}
+                placeholder="원하시는 작업 내용, 참고자료, 스타일 등을 상세히 설명해주세요." rows={6} className="mt-2" maxLength={5000} />
+              <p className={`mt-1 text-xs ${requirements.trim().length > 0 && requirements.trim().length < 30 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {requirements.trim().length}/5,000자 {requirements.trim().length > 0 && requirements.trim().length < 30 && '(최소 30자)'}
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="preferredDueDate" className="flex items-center gap-1.5">
+                <CalendarDays className="h-4 w-4" />
+                희망 완료일 (선택)
+              </Label>
+              <Input
+                id="preferredDueDate"
+                type="date"
+                value={preferredDueDate}
+                onChange={(e) => setPreferredDueDate(e.target.value)}
+                min={minDueDate}
+                className="mt-2 w-full"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                미입력 시 기본 작업일({pkg.work_days}일) 기준으로 자동 설정됩니다.
+              </p>
+            </div>
           </CardContent>
         </Card>
         <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
