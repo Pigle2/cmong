@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **233개 단위 테스트** + **99개 시나리오 테스트** = **332개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **238개 단위 테스트** + **99개 시나리오 테스트** = **337개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -436,7 +436,30 @@ npx playwright test -g "A-1"
 
 ---
 
-### 15. `full-scenario.spec.ts` — 통합 시나리오 (99개)
+### 16. `service-detail-gallery.spec.ts` — 서비스 상세 이미지 갤러리 (3개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| GAL-1 | 서비스 상세 페이지에 이미지 갤러리 영역이 표시됨 | - | aspect-video 래퍼 + 이미지 또는 🎨 아이콘 |
+| GAL-2 | 이미지 2개 이상 시 이전/다음 화살표 버튼 표시 | - | aria-label 버튼 + "N / M" 인덱스 배지 |
+| GAL-3 | 화살표 클릭 시 이미지 인덱스 표시 변경 | - | 다음→인덱스 변경, 이전→복귀 확인 |
+
+> 이미지가 1개 이하인 서비스에서는 GAL-2/GAL-3이 자동 스킵 처리됨 (단일 이미지 시 화살표/인디케이터 숨김이 올바른 동작)
+
+---
+
+### 17. `service-card-workdays.spec.ts` — 서비스 카드 작업일 표시 (2개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| CRD-1 | 서비스 목록(/services)에서 카드에 작업일이 표시됨 | - | "N일 이내" 텍스트 또는 카드 렌더링 확인 |
+| CRD-2 | 작업일 텍스트 형식이 "N일 이내" 패턴 | - | 정규식 검증, 미배포 시 API work_days 필드 대체 검증 |
+
+> 서비스 패키지 work_days 데이터가 없을 경우 API 직접 검증으로 폴백. Clock 아이콘과 함께 표시.
+
+---
+
+### 18. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
 `full-scenario.spec.ts`는 단위 파일들과 동일한 테스트 ID를 사용하며, 하나의 파일에서 전체 시나리오를 순차 실행.
@@ -463,6 +486,8 @@ npx playwright test -g "A-1"
 | 신규기능 | new-features.spec.ts | 35 | 설정개선/모드전환/판매자주문상세/주문취소/납품/자동확정 |
 | 주문 API 보안 | order-new-api.spec.ts | 5 | 주문 페이지 클라이언트→API route 전환 검증 |
 | 리뷰 API 보안 | review-data-api.spec.ts | 8 | review-data API route 인증/UUID/소유권 검증 |
+| 이미지 갤러리 | service-detail-gallery.spec.ts | 3 | 갤러리 영역/화살표 버튼/인덱스 전환 |
+| 카드 작업일 | service-card-workdays.spec.ts | 2 | "N일 이내" 형식 표시 검증 |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -485,4 +510,6 @@ npx playwright test -g "A-1"
 | 설정/모드전환/주문취소/납품/자동확정 | `new-features.spec.ts` |
 | 주문 페이지 클라이언트→API 전환 | `order-new-api.spec.ts` |
 | 리뷰 데이터 API route 보안 | `review-data-api.spec.ts` |
+| 서비스 상세 이미지 갤러리 | `service-detail-gallery.spec.ts` |
+| 서비스 카드 작업일 표시 | `service-card-workdays.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |

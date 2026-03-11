@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Star } from 'lucide-react'
+import { Star, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
@@ -12,6 +12,12 @@ interface ServiceCardProps {
 export function ServiceCard({ service }: ServiceCardProps) {
   const minPrice = service.packages?.reduce(
     (min: number, pkg: any) => (pkg.price < min ? pkg.price : min),
+    Infinity
+  )
+
+  const minWorkDays = service.packages?.reduce(
+    (min: number, pkg: any) =>
+      pkg.work_days != null && pkg.work_days < min ? pkg.work_days : min,
     Infinity
   )
 
@@ -50,12 +56,20 @@ export function ServiceCard({ service }: ServiceCardProps) {
               ({service.review_count})
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-bold">
-              {minPrice && minPrice !== Infinity
-                ? formatPrice(minPrice)
-                : '가격 문의'}
-            </span>
+          <span className="text-sm font-bold">
+            {minPrice && minPrice !== Infinity
+              ? formatPrice(minPrice)
+              : '가격 문의'}
+          </span>
+          <div className="mt-1 flex items-center justify-between">
+            {minWorkDays && minWorkDays !== Infinity ? (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                {minWorkDays}일 이내
+              </span>
+            ) : (
+              <span />
+            )}
             {service.order_count > 0 && (
               <Badge variant="secondary" className="text-xs">
                 {service.order_count}건 완료

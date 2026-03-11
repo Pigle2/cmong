@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator'
 import { Star, MessageSquare, Clock, CheckCircle } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import { SELLER_GRADES } from '@/lib/constants'
+import { ImageGallery } from '@/components/features/service/image-gallery'
 
 interface Props {
   params: { id: string }
@@ -114,14 +115,12 @@ export default async function ServiceDetailPage({ params }: Props) {
             </div>
           )}
 
-          {/* Gallery placeholder */}
-          <div className="mb-8 aspect-video overflow-hidden rounded-lg bg-muted">
-            {service.thumbnail_url ? (
-              <img src={service.thumbnail_url} alt={service.title} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full items-center justify-center text-6xl">🎨</div>
-            )}
-          </div>
+          {/* Image Gallery */}
+          <ImageGallery
+            thumbnailUrl={service.thumbnail_url}
+            images={(service.images || []) as Array<{ id: string; image_url: string; sort_order: number }>}
+            alt={service.title}
+          />
 
           {/* Description */}
           <div className="prose max-w-none">

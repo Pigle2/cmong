@@ -29,7 +29,7 @@
 세션 시작 시 아래 명령으로 자율 개선 루프를 재설정할 것:
 
 ```
-/loop 120m 이 프로젝트를 자율적으로 분석하고 개선해줘. 사용자 확인 없이 직접 판단하여 실행할 것. 매 실행마다: 1) 코드 품질 이슈, 버그, 보안 취약점(SQL injection, XSS, 인증 우회, RLS 등) 탐색 2) 발견된 문제 중 가장 중요한 1-2개를 직접 수정 3) 수정한 내용에 대한 테스트 작성 및 실행하여 통과 확인 4) docs/10-testing/e2e-test-catalog.md 업데이트 5) 변경사항을 git commit (메시지에 무엇을 왜 고쳤는지 명시). 이전 실행에서 고친 부분은 건너뛰고 매번 새로운 개선점을 찾을 것.
+/loop 120m 이 프로젝트를 자율적으로 분석하고 개선해줘. 사용자 확인 없이 직접 판단하여 실행할 것. 매 실행마다: 1) docs/ 기획서와 실제 UI 구현을 비교하여, 기획 의도와 다르게 동작하거나 미구현된 UI/기능을 탐색 2) 발견된 문제 중 가장 중요한 1-2개를 직접 수정 3) 수정한 내용에 대한 테스트 작성 및 실행하여 통과 확인 4) docs/10-testing/e2e-test-catalog.md 업데이트 5) 변경사항을 git commit (메시지에 무엇을 왜 고쳤는지 명시). 이전 실행에서 고친 부분은 건너뛰고 매번 새로운 개선점을 찾을 것.
 ```
 
 ### 출력 형식
@@ -74,7 +74,10 @@
 | 31 | `98db2b8` | categoryId 정수 검증 강화 (NaN/float 방지) + 인증 스키마 email max length 통일 |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
-- 주문 상태 전이 엣지케이스 (동시 취소/납품 등)
-- Admin Client(Service Role) 불필요한 사용 — Chat API에서 일반 클라이언트로 전환 검토
-- CSP 정책 `unsafe-inline`/`unsafe-eval` 강화
-- 클라이언트 직접 Supabase 호출 잔존 (orders/new, chat)
+- 기획서(`docs/`) 대비 UI 미구현/오동작 항목 전수 점검
+  - `docs/04-feature-spec/` 각 기능 명세 vs 실제 페이지 동작 비교
+  - `docs/05-screen-design/` 화면 설계 vs 실제 UI 구성요소 비교
+- 보안/코드 품질 (우선순위 낮음)
+  - Admin Client(Service Role) 불필요 사용 — Chat API
+  - CSP 정책 `unsafe-inline`/`unsafe-eval` 강화
+  - 클라이언트 직접 Supabase 호출 잔존 (chat)
