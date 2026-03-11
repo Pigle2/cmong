@@ -72,11 +72,14 @@
 | 29 | `46bc318` | 찜 API UUID 형식 검증 추가 + 서비스 정렬 로직 API/페이지 불일치 수정 |
 | 30 | `796e4e2` | Chat API roomId UUID 검증 추가 + 판매자 주문 상세 구매자 이메일 노출 제거 |
 | 31 | `98db2b8` | categoryId 정수 검증 강화 (NaN/float 방지) + 인증 스키마 email max length 통일 |
+| 32 | (pending) | 판매자 대시보드 강화 (매출/할일/최근주문) + 주문 관리 5탭 분리 (수락/거절 인라인) |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
 - 기획서(`docs/`) 대비 UI 미구현/오동작 항목 전수 점검
-  - `docs/04-feature-spec/` 각 기능 명세 vs 실제 페이지 동작 비교
-  - `docs/05-screen-design/` 화면 설계 vs 실제 UI 구성요소 비교
+  - 판매자 서비스 관리: 상태 탭/복제/중지/통계/삭제 버튼 미구현
+  - 판매자 프로필: 이미지 업로드/경력/포트폴리오/인증 미구현
+  - 정산 관리: 전체 미구현
+  - 통계/분석: 전체 미구현
 - 보안/코드 품질 (우선순위 낮음)
   - Admin Client(Service Role) 불필요 사용 — Chat API
   - CSP 정책 `unsafe-inline`/`unsafe-eval` 강화
