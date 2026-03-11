@@ -6,12 +6,14 @@ import { Header } from '@/components/layout/header'
 import { Toaster } from '@/components/ui/toaster'
 import { UserProvider } from '@/hooks/use-user'
 import { cn } from '@/lib/utils'
-import { LayoutDashboard, Package, ShoppingCart, User, MessageSquare } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, User, MessageSquare, Wallet, BarChart3 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/seller/dashboard', icon: LayoutDashboard, label: '대시보드' },
   { href: '/seller/services', icon: Package, label: '서비스 관리' },
   { href: '/seller/orders', icon: ShoppingCart, label: '주문 관리' },
+  { href: '/seller/settlement', icon: Wallet, label: '정산 관리' },
+  { href: '/seller/analytics', icon: BarChart3, label: '통계' },
   { href: '/chat', icon: MessageSquare, label: '메시지' },
   { href: '/seller/profile', icon: User, label: '프로필' },
 ]
