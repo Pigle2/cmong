@@ -205,19 +205,22 @@ export default async function ServiceDetailPage({ params }: Props) {
               {sellerProfile?.response_time != null && (
                 <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <TrendingUp className="h-3.5 w-3.5 text-green-500" />
-                    <span>
-                      {sellerProfile.response_time <= 30
-                        ? '응답률 높음'
-                        : sellerProfile.response_time <= 120
-                          ? '응답률 보통'
-                          : '응답률 낮음'}
+                    <TrendingUp className={`h-3.5 w-3.5 ${
+                      sellerProfile.response_time <= 30 ? 'text-green-500' :
+                      sellerProfile.response_time <= 120 ? 'text-yellow-500' : 'text-red-500'
+                    }`} />
+                    <span className="font-medium">
+                      응답률 {sellerProfile.response_time <= 30 ? '98' :
+                        sellerProfile.response_time <= 60 ? '90' :
+                        sellerProfile.response_time <= 120 ? '75' : '50'}%
                     </span>
                   </div>
                   <span className="text-muted-foreground/60">·</span>
                   <div className="flex items-center gap-1">
                     <Clock className="h-3.5 w-3.5" />
-                    평균 {sellerProfile.response_time}분
+                    평균 {sellerProfile.response_time < 60
+                      ? `${sellerProfile.response_time}분`
+                      : `${Math.round(sellerProfile.response_time / 60)}시간`} 이내
                   </div>
                 </div>
               )}

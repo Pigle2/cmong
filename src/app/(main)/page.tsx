@@ -37,13 +37,13 @@ export default async function HomePage() {
       .order('sort_order'),
     supabase
       .from('services')
-      .select('*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url)')
+      .select('*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url), seller_profile:seller_profiles!seller_id(grade)')
       .eq('status', 'ACTIVE')
       .order('order_count', { ascending: false })
       .limit(8),
     supabase
       .from('services')
-      .select('*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url)')
+      .select('*, packages:service_packages(*), seller:profiles!seller_id(nickname, avatar_url), seller_profile:seller_profiles!seller_id(grade)')
       .eq('status', 'ACTIVE')
       .order('created_at', { ascending: false })
       .limit(8),

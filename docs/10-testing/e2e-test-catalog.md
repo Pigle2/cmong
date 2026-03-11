@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **384개 단위 테스트** + **99개 시나리오 테스트** = **483개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **389개 단위 테스트** + **99개 시나리오 테스트** = **488개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -846,6 +846,18 @@ npx playwright test -g "A-1"
 
 ---
 
+### 49. `seller-response-rate.spec.ts` — 판매자 응답률 + 등급 뱃지 (5개)
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| RESP-1 | 서비스 상세 판매자 응답률 % 표시 | - | "응답률 98%" 형식 |
+| RESP-2 | 서비스 상세 평균 응답 시간 표시 | - | "평균 N분/시간 이내" |
+| RESP-3 | 서비스 상세 판매자 등급 뱃지 | - | 전문가/마스터/일반/신규 |
+| RESP-4 | 서비스 카드 판매자 이름 표시 | - | 카드에 판매자명 |
+| RESP-5 | 서비스 카드 평점/리뷰수 표시 | - | 별점 + 리뷰 건수 |
+
+---
+
 ### 27. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
@@ -903,6 +915,7 @@ npx playwright test -g "A-1"
 | 인기 서비스 순위 | popular-ranking.spec.ts | 3 | TOP 섹션/순위 배지/더보기 링크 |
 | 주문서 개선 | order-form-enhanced.spec.ts | 5 | 희망완료일/글자수카운터/30자검증/API검증 |
 | 서비스 고급 필터 | service-advanced-filters.spec.ts | 5 | 판매자등급/거래건수/URL반영/초기화 |
+| 판매자 응답률+등급 | seller-response-rate.spec.ts | 5 | 응답률%/응답시간/등급뱃지/카드정보 |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -946,4 +959,5 @@ npx playwright test -g "A-1"
 | 인기 서비스 순위 표시 | `popular-ranking.spec.ts` |
 | 주문서 희망완료일/글자수 검증 | `order-form-enhanced.spec.ts` |
 | 서비스 판매자등급/거래건수 필터 | `service-advanced-filters.spec.ts` |
+| 판매자 응답률/등급 뱃지 | `seller-response-rate.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |

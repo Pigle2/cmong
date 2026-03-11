@@ -4,6 +4,7 @@ import { Star, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
+import { SELLER_GRADES } from '@/lib/constants'
 
 interface ServiceCardProps {
   service: any
@@ -43,6 +44,16 @@ export function ServiceCard({ service }: ServiceCardProps) {
             <span className="text-sm text-muted-foreground">
               {service.seller?.nickname || '판매자'}
             </span>
+            {(() => {
+              const sp = Array.isArray(service.seller_profile) ? service.seller_profile[0] : service.seller_profile
+              const grade = sp?.grade as keyof typeof SELLER_GRADES | undefined
+              if (!grade || grade === 'NEW') return null
+              return (
+                <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                  {SELLER_GRADES[grade] || grade}
+                </Badge>
+              )
+            })()}
           </div>
           <h3 className="mb-2 line-clamp-2 text-sm font-medium leading-snug">
             {service.title}

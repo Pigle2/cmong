@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { Star, Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { formatPrice } from '@/lib/utils'
+import { SELLER_GRADES } from '@/lib/constants'
 
 interface ServiceListCardProps {
   service: any
@@ -47,6 +48,16 @@ export function ServiceListCard({ service }: ServiceListCardProps) {
               <span className="text-sm text-muted-foreground">
                 {service.seller?.nickname || '판매자'}
               </span>
+              {(() => {
+                const sp = Array.isArray(service.seller_profile) ? service.seller_profile[0] : service.seller_profile
+                const grade = sp?.grade as keyof typeof SELLER_GRADES | undefined
+                if (!grade || grade === 'NEW') return null
+                return (
+                  <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                    {SELLER_GRADES[grade] || grade}
+                  </Badge>
+                )
+              })()}
               <div className="flex items-center gap-1">
                 <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
                 <span className="text-sm font-medium">
