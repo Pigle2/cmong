@@ -48,7 +48,7 @@ export async function PUT(
     )
   }
 
-  if (categoryId !== undefined && (typeof categoryId !== 'number' || categoryId <= 0)) {
+  if (categoryId !== undefined && (typeof categoryId !== 'number' || !Number.isInteger(categoryId) || categoryId <= 0)) {
     return NextResponse.json(
       { success: false, error: { code: 'BAD_REQUEST', message: '유효한 카테고리 ID가 필요합니다' } },
       { status: 400 }

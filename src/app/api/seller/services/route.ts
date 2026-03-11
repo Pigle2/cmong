@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
   const { categoryId, title, description, status, packages, tags } = body
 
   // 입력값 검증
-  if (!categoryId || typeof categoryId !== 'number') {
+  if (!categoryId || typeof categoryId !== 'number' || !Number.isInteger(categoryId) || categoryId <= 0) {
     return NextResponse.json(
-      { success: false, error: { code: 'BAD_REQUEST', message: '카테고리를 선택해주세요' } },
+      { success: false, error: { code: 'BAD_REQUEST', message: '유효한 카테고리를 선택해주세요' } },
       { status: 400 }
     )
   }

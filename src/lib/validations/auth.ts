@@ -6,7 +6,7 @@ export const loginSchema = z.object({
 })
 
 export const registerSchema = z.object({
-  email: z.string().email('올바른 이메일 주소를 입력해주세요'),
+  email: z.string().max(254, '이메일이 너무 깁니다').email('올바른 이메일 주소를 입력해주세요'),
   password: z
     .string()
     .min(8, '비밀번호는 8자 이상이어야 합니다')
@@ -28,7 +28,7 @@ export const registerSchema = z.object({
 })
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('올바른 이메일 주소를 입력해주세요'),
+  email: z.string().max(254, '이메일이 너무 깁니다').email('올바른 이메일 주소를 입력해주세요'),
 })
 
 export type LoginFormData = z.infer<typeof loginSchema>

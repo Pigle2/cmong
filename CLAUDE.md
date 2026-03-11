@@ -70,7 +70,8 @@
 | 27 | `3b71f65` | 회원 탈퇴 클라이언트 직접 orders 조회 제거 + 찜 토글 TOCTOU 레이스컨디션 수정 |
 | 28 | `2f39335` | 보안 헤더 보강 (X-Frame-Options/X-XSS-Protection/HSTS) + auto-confirm DB 에러 메시지 노출 차단 |
 | 29 | `46bc318` | 찜 API UUID 형식 검증 추가 + 서비스 정렬 로직 API/페이지 불일치 수정 |
-| 30 | `d681f1a` | Chat API roomId UUID 검증 추가 + 판매자 주문 상세 구매자 이메일 노출 제거 |
+| 30 | `796e4e2` | Chat API roomId UUID 검증 추가 + 판매자 주문 상세 구매자 이메일 노출 제거 |
+| 31 | `98db2b8` | categoryId 정수 검증 강화 (NaN/float 방지) + 인증 스키마 email max length 통일 |
 
 ### 남은 알려진 이슈 (다음 사이클 후보)
 - 주문 상태 전이 엣지케이스 (동시 취소/납품 등)

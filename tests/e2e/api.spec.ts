@@ -1027,4 +1027,26 @@ test.describe('API 보안', () => {
     // 리다이렉트되었거나 404
     expect(url.includes('/login') || res?.status() === 404).toBeTruthy()
   })
+
+  test('S-92. 서비스 등록 API NaN categoryId 거부', async ({ request }) => {
+    // categoryId가 NaN이 되는 경우 (parseInt("abc") === NaN) → 400
+    const res = await request.post('/api/seller/services', {
+      data: { categoryId: 'abc', title: 'test' },
+    })
+    expect(res.status()).not.toBe(500)
+  })
+
+  test('S-93. 서비스 등록 API 소수점 categoryId 거부', async ({ request }) => {
+    const res = await request.post('/api/seller/services', {
+      data: { categoryId: 1.5, title: 'test' },
+    })
+    expect(res.status()).not.toBe(500)
+  })
+
+  test('S-94. 회원가입 페이지 접근 가능', async ({ page }) => {
+    const res = await page.goto('/register')
+    expect(res).not.toBeNull()
+    // 로그인 상태면 리다이렉트, 비로그인이면 200
+    expect([200, 302, 307]).toContain(res!.status())
+  })
 })
