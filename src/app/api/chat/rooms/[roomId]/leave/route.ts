@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ roomId: string }> }
 ) {
   const { roomId } = await params
+
+  if (!UUID_REGEX.test(roomId)) {
+    return NextResponse.json(
+      { success: false, error: { code: 'BAD_REQUEST', message: '유효한 채팅방 ID가 필요합니다' } },
+      { status: 400 }
+    )
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

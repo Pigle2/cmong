@@ -27,7 +27,7 @@ export default async function SellerOrderDetailPage({ params }: Props) {
     .select(`
       *,
       service:services(id, title, thumbnail_url),
-      buyer:profiles!buyer_id(id, nickname, avatar_url, email),
+      buyer:profiles!buyer_id(id, nickname, avatar_url),
       seller:profiles!seller_id(id, nickname),
       package:service_packages!package_id(name, tier, price, work_days, revision_count)
     `)
@@ -171,9 +171,6 @@ export default async function SellerOrderDetailPage({ params }: Props) {
                 </Avatar>
                 <div>
                   <p className="font-medium">{buyerNickname}</p>
-                  {order.buyer?.email && (
-                    <p className="text-xs text-muted-foreground">{order.buyer.email}</p>
-                  )}
                 </div>
               </div>
               <Link

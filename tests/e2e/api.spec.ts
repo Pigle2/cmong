@@ -1006,4 +1006,25 @@ test.describe('API 보안', () => {
     expect(body.success).toBe(true)
     expect(body.data).toBeDefined()
   })
+
+  test('S-89. 채팅 메시지 API 잘못된 roomId UUID 거부', async ({ request }) => {
+    const res = await request.get('/api/chat/rooms/not-a-uuid/messages')
+    expect(res.status()).not.toBe(500)
+    // UUID 검증 → 400 또는 인증 체크 → 401
+    expect([400, 401]).toContain(res.status())
+  })
+
+  test('S-90. 채팅 나가기 API 잘못된 roomId UUID 거부', async ({ request }) => {
+    const res = await request.post('/api/chat/rooms/not-a-uuid/leave')
+    expect(res.status()).not.toBe(500)
+    expect([400, 401]).toContain(res.status())
+  })
+
+  test('S-91. 판매자 주문 상세 페이지 비인증 시 리다이렉트', async ({ page }) => {
+    // 비인증 → 로그인 페이지로 리다이렉트
+    const res = await page.goto('/seller/orders/00000000-0000-0000-0000-000000000000')
+    const url = page.url()
+    // 리다이렉트되었거나 404
+    expect(url.includes('/login') || res?.status() === 404).toBeTruthy()
+  })
 })
