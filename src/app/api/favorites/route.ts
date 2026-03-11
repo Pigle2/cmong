@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function GET() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -39,8 +41,8 @@ export async function POST(request: NextRequest) {
   }
   const { serviceId } = body
 
-  if (!serviceId || typeof serviceId !== 'string') {
-    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: 'serviceId가 필요합니다' } }, { status: 400 })
+  if (!serviceId || typeof serviceId !== 'string' || !UUID_REGEX.test(serviceId)) {
+    return NextResponse.json({ success: false, error: { code: 'BAD_REQUEST', message: '유효한 serviceId가 필요합니다' } }, { status: 400 })
   }
 
   // 서비스 존재 및 활성 상태 검증

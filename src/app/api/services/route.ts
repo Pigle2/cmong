@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     case 'orders': query = query.order('order_count', { ascending: false }); break
     case 'price_asc':
     case 'price_desc':
-    default: query = query.order('order_count', { ascending: false })
+    default: query = query.order('order_count', { ascending: false }).order('avg_rating', { ascending: false })
   }
 
   const from = (page - 1) * limit

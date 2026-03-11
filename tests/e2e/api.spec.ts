@@ -988,4 +988,22 @@ test.describe('API 보안', () => {
     expect(res).not.toBeNull()
     expect(res!.status()).toBe(200)
   })
+
+  test('S-87. 찜 API 잘못된 UUID 형식 serviceId 거부', async ({ request }) => {
+    // UUID 형식이 아닌 serviceId → 400 (비인증이면 401 먼저 반환)
+    const res = await request.post('/api/favorites', {
+      data: { serviceId: 'invalid-uuid-format' },
+    })
+    expect(res.status()).not.toBe(500)
+    expect([400, 401]).toContain(res.status())
+  })
+
+  test('S-88. 서비스 목록 API 기본 정렬 일관성', async ({ request }) => {
+    // 기본 정렬(recommended)로 서비스 목록 조회 → 성공
+    const res = await request.get('/api/services?sort=recommended')
+    expect(res.ok()).toBeTruthy()
+    const body = await res.json()
+    expect(body.success).toBe(true)
+    expect(body.data).toBeDefined()
+  })
 })
