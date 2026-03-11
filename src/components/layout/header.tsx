@@ -29,6 +29,12 @@ export function Header() {
             >
               서비스 찾기
             </Link>
+            <Link
+              href="/quote"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              견적요청
+            </Link>
             {mode === 'SELLER' && user && (
               <>
                 <Link

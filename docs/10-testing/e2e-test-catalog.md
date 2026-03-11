@@ -1,6 +1,6 @@
 # E2E 테스트 목록
 
-> Playwright 기반 E2E 테스트 카탈로그. 총 **293개 단위 테스트** + **99개 시나리오 테스트** = **392개**.
+> Playwright 기반 E2E 테스트 카탈로그. 총 **298개 단위 테스트** + **99개 시나리오 테스트** = **397개**.
 > 마지막 업데이트: 2026-03-11
 
 ## 실행 방법
@@ -616,6 +616,20 @@ npx playwright test -g "A-1"
 
 ---
 
+### 32. `quote-page.spec.ts` — 견적 요청 페이지 (5개)
+
+> /quote 페이지 및 GNB 견적요청 링크 신규 기능. 배포 전에는 QT-1~5 모두 자동 스킵.
+
+| ID | 테스트 | 로그인 | 설명 |
+|----|--------|:------:|------|
+| QT-1 | /quote 페이지 접근 시 견적 요청 폼이 표시됨 | - | /quote 진입 → 폼 태그 + 견적 헤딩 텍스트 존재 (미배포 시 스킵) |
+| QT-2 | GNB에 "견적요청" 링크가 존재함 | - | header 내 "견적요청" 텍스트 링크 표시 + 클릭 가능 (미배포 시 스킵) |
+| QT-3 | 견적요청 링크 클릭 시 /quote 페이지로 이동 | - | GNB 링크 클릭 → URL /quote 이동 + 404 아님 확인 (미배포 시 스킵) |
+| QT-4 | 폼에 필수 입력 필드들이 존재함 (제목, 상세 내용) | - | 제목 input + 상세 내용 textarea 존재 확인 (미배포 시 스킵) |
+| QT-5 | "견적 요청하기" 버튼이 표시됨 | - | type="submit" 버튼 또는 "견적 요청하기" 텍스트 버튼 (미배포 시 스킵) |
+
+---
+
 ### 27. `full-scenario.spec.ts` — 통합 시나리오 (99개)
 
 위 단위 테스트 파일들의 시나리오를 순서대로 연결한 전체 플로우 테스트.
@@ -656,6 +670,7 @@ npx playwright test -g "A-1"
 | 인기 전문가 섹션 | popular-experts.spec.ts | 4 | 메인 전문가 카드/닉네임/배지/평점/링크 (미배포 시 스킵) |
 | 패키지 탭 UI + 응답률 | package-tabs.spec.ts | 7 | 탭 STANDARD/DELUXE/PREMIUM/구매하기/응답률 텍스트 (미배포 시 일부 스킵) |
 | 알림 팝오버 탭 필터 | notification-tabs.spec.ts | 6 | 팝오버 열림/전체주문메시지시스템 탭/active 스타일 (미배포 시 스킵) |
+| 견적 요청 페이지 | quote-page.spec.ts | 5 | /quote 폼/GNB 링크/필수 필드/제출 버튼 (미배포 시 스킵) |
 | 통합 | full-scenario.spec.ts | 99 | 전체 플로우 |
 
 ## 관련 파일 실행 가이드
@@ -691,4 +706,5 @@ npx playwright test -g "A-1"
 | 메인 페이지 인기 전문가 섹션 | `popular-experts.spec.ts` |
 | 패키지 탭 UI + 판매자 응답률 텍스트 | `package-tabs.spec.ts` |
 | 알림 팝오버 탭 필터 (전체/주문/메시지/시스템) | `notification-tabs.spec.ts` |
+| 견적 요청 페이지 (/quote) | `quote-page.spec.ts` |
 | 커밋 전 전체 검증 | 전체 실행 |
